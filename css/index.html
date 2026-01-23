@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NZ Extreme Weather & Incidents Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>NZ Extreme Weather & Incidents</h1>
+        <div class="status">
+            <span id="last-update">Last update: --</span>
+            <button id="refresh-btn" onclick="refreshAll()">Refresh</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="map-container">
+            <div id="map"></div>
+            <div id="map-legend">
+                <h4>Legend</h4>
+                <div class="legend-item">
+                    <span class="legend-marker warning"></span> Weather Warning
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker earthquake"></span> Earthquake
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker volcano"></span> Volcano
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker weather"></span> City
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker incident"></span> Incident
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker crime"></span> Crime/Unrest
+                </div>
+            </div>
+        </div>
+
+        <aside id="sidebar">
+            <div class="panel" id="warnings-panel">
+                <h3>Weather Warnings <span class="count warning-count" id="warning-count">0</span></h3>
+                <div class="panel-content" id="warnings-content">
+                    <div class="loading">Loading MetService warnings...</div>
+                </div>
+            </div>
+
+            <div class="panel" id="weather-panel">
+                <h3>Current Weather</h3>
+                <div class="panel-content" id="weather-content">
+                    <div class="loading">Loading weather data...</div>
+                </div>
+            </div>
+
+            <div class="panel" id="earthquake-panel">
+                <h3>Recent Earthquakes <span class="count" id="quake-count">0</span></h3>
+                <div class="panel-content" id="earthquake-content">
+                    <div class="loading">Loading earthquake data...</div>
+                </div>
+            </div>
+
+            <div class="panel" id="volcano-panel">
+                <h3>Volcanic Alert Levels</h3>
+                <div class="panel-content" id="volcano-content">
+                    <div class="loading">Loading volcanic data...</div>
+                </div>
+            </div>
+
+            <div class="panel" id="incidents-panel">
+                <h3>Emergency Incidents</h3>
+                <div class="panel-content" id="incidents-content">
+                    <div class="loading">Loading incident data...</div>
+                </div>
+            </div>
+
+            <div class="panel" id="crime-panel">
+                <h3>Crime & Civil Unrest <span class="count" id="crime-count">0</span></h3>
+                <div class="panel-content" id="crime-content">
+                    <div class="loading">Loading crime data...</div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/geonet.js"></script>
+    <script src="js/weather.js"></script>
+    <script src="js/feeds.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

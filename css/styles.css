@@ -1,0 +1,457 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+header h1::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcf63);
+    border-radius: 50%;
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#last-update {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+#refresh-btn {
+    background: #4a90d9;
+    border: none;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#refresh-btn:hover {
+    background: #357abd;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+#map-container {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+    min-height: 600px;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    background: #0f3460;
+}
+
+#map-legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(26, 26, 46, 0.95);
+    padding: 1rem;
+    border-radius: 8px;
+    z-index: 1000;
+    border: 1px solid #333;
+}
+
+#map-legend h4 {
+    margin-bottom: 0.5rem;
+    color: #aaa;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    margin: 0.3rem 0;
+}
+
+.legend-marker {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+}
+
+.legend-marker.warning {
+    background: #ffd93d;
+    box-shadow: 0 0 6px #ffd93d;
+}
+
+.legend-marker.earthquake {
+    background: #ff6b6b;
+    box-shadow: 0 0 6px #ff6b6b;
+}
+
+.legend-marker.volcano {
+    background: #ffd93d;
+    box-shadow: 0 0 6px #ffd93d;
+}
+
+.legend-marker.weather {
+    background: #4ecdc4;
+    box-shadow: 0 0 6px #4ecdc4;
+}
+
+.legend-marker.incident {
+    background: #9b59b6;
+    box-shadow: 0 0 6px #9b59b6;
+}
+
+.legend-marker.crime {
+    background: #e74c3c;
+    box-shadow: 0 0 6px #e74c3c;
+}
+
+#sidebar {
+    width: 380px;
+    background: #16213e;
+    overflow-y: auto;
+    border-left: 1px solid #333;
+}
+
+.panel {
+    border-bottom: 1px solid #333;
+}
+
+.panel h3 {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.panel h3:hover {
+    background: rgba(74, 144, 217, 0.3);
+}
+
+.panel h3::after {
+    content: '▼';
+    font-size: 0.7rem;
+    color: #888;
+    margin-left: 0.5rem;
+    transition: transform 0.3s;
+}
+
+.panel.collapsed h3::after {
+    transform: rotate(-90deg);
+}
+
+.panel.collapsed .panel-content {
+    display: none;
+}
+
+.panel.filter-active h3 {
+    background: rgba(74, 144, 217, 0.4);
+    border-left: 3px solid #4a90d9;
+}
+
+.panel.filter-active h3::before {
+    content: '◉ ';
+    color: #4ecdc4;
+}
+
+.count {
+    background: #4a90d9;
+    color: #fff;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.count.warning-count {
+    background: #ff6b6b;
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+#warnings-panel {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, transparent 100%);
+}
+
+#warnings-panel h3 {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.panel-content {
+    padding: 0.5rem;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+/* Alert Items */
+.alert-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.alert-item:hover {
+    background: rgba(74, 144, 217, 0.2);
+    transform: translateX(2px);
+}
+
+.alert-item.severity-high {
+    border-left: 3px solid #ff6b6b;
+}
+
+.alert-item.severity-medium {
+    border-left: 3px solid #ffd93d;
+}
+
+.alert-item.severity-low {
+    border-left: 3px solid #6bcf63;
+}
+
+.alert-item .title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.alert-item .meta {
+    font-size: 0.75rem;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+}
+
+.alert-item .description {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 0.3rem;
+    line-height: 1.4;
+}
+
+/* Weather Card */
+.weather-card {
+    background: linear-gradient(135deg, #1e3a5f 0%, #16213e 100%);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.weather-card .city {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.weather-card .temp {
+    font-size: 2rem;
+    font-weight: 300;
+}
+
+.weather-card .conditions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.weather-card .condition {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+/* Volcano Card */
+.volcano-card {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.volcano-card .name {
+    font-weight: 500;
+}
+
+.volcano-card .level {
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.volcano-card .level-0 {
+    background: #6bcf63;
+    color: #000;
+}
+
+.volcano-card .level-1 {
+    background: #ffd93d;
+    color: #000;
+}
+
+.volcano-card .level-2 {
+    background: #ff9f43;
+    color: #000;
+}
+
+.volcano-card .level-3,
+.volcano-card .level-4,
+.volcano-card .level-5 {
+    background: #ff6b6b;
+    color: #fff;
+}
+
+/* Incident Item */
+.incident-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.incident-item .title {
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.incident-item .time {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.incident-item .source {
+    font-size: 0.7rem;
+    color: #4a90d9;
+    margin-top: 0.3rem;
+}
+
+/* Error state */
+.error {
+    color: #ff6b6b;
+    text-align: center;
+    padding: 1rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* Leaflet popup customization */
+.leaflet-popup-content-wrapper {
+    background: #16213e;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.leaflet-popup-tip {
+    background: #16213e;
+}
+
+.leaflet-popup-content {
+    margin: 0.75rem;
+}
+
+.popup-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.popup-meta {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    main {
+        flex-direction: column;
+    }
+
+    #map-container {
+        height: 50vh;
+    }
+
+    #sidebar {
+        width: 100%;
+        height: 50vh;
+    }
+}
