@@ -7,9 +7,56 @@ const MapManager = {
         weather: null,
         warnings: null,
         incidents: null,
-        crime: null
+        crime: null,
+        mostRecent: null,
+        districts: null
     },
     baseTileLayer: null,
+
+    // District colors (subtle translucent)
+    districtColors: {
+        'Northland': '#ffd93d',
+        'Auckland': '#ff6b6b',
+        'Hauraki Gulf': '#00bcd4',
+        'Waikato': '#6bcf63',
+        'Bay of Plenty': '#ffa500',
+        'Gisborne': '#e056fd',
+        'Hawkes Bay': '#f0932b',
+        'Taranaki': '#eb4d4b',
+        'Manawatu-Whanganui': '#7ed6df',
+        'Wellington': '#4ecdc4',
+        'Tasman': '#95afc0',
+        'Nelson': '#c7ecee',
+        'Marlborough': '#dfe6e9',
+        'West Coast': '#a29bfe',
+        'Canterbury': '#74b9ff',
+        'Otago': '#81ecec',
+        'Southland': '#55a8fd'
+    },
+
+    // Simplified district boundaries (approximate polygons)
+    districtBoundaries: {
+        'Northland': [[-34.4, 172.5], [-34.4, 174.5], [-35.8, 174.8], [-36.2, 174.2], [-35.5, 173.0]],
+        'Auckland': [[-36.2, 174.2], [-36.4, 175.2], [-37.2, 175.4], [-37.4, 174.4], [-36.8, 174.0]],
+        'Hauraki Gulf': [[-36.2, 174.8], [-36.0, 175.5], [-36.3, 176.2], [-37.1, 175.9], [-37.2, 175.3], [-36.8, 174.9]],
+        'Waikato': [[-37.2, 174.4], [-37.0, 176.2], [-38.8, 176.5], [-39.0, 175.0], [-38.0, 174.2]],
+        'Bay of Plenty': [[-37.0, 176.2], [-37.4, 178.0], [-38.2, 178.2], [-38.8, 176.5]],
+        'Gisborne': [[-37.4, 177.5], [-37.8, 178.6], [-38.8, 178.4], [-38.6, 177.2]],
+        'Hawkes Bay': [[-38.6, 176.5], [-38.8, 178.0], [-40.2, 177.5], [-40.0, 176.0]],
+        'Taranaki': [[-38.6, 173.5], [-38.6, 174.8], [-39.8, 174.5], [-39.8, 173.6]],
+        'Manawatu-Whanganui': [[-38.8, 174.8], [-39.0, 176.5], [-40.5, 176.2], [-40.5, 175.0]],
+        'Wellington': [[-40.5, 174.8], [-40.5, 176.2], [-41.6, 175.8], [-41.6, 174.5]],
+        'Tasman': [[-40.5, 172.0], [-40.8, 173.5], [-42.0, 172.8], [-41.8, 171.5]],
+        'Nelson': [[-41.0, 173.0], [-41.0, 173.6], [-41.4, 173.6], [-41.4, 173.0]],
+        'Marlborough': [[-41.0, 173.5], [-41.2, 174.5], [-42.5, 174.2], [-42.2, 173.2]],
+        'West Coast': [[-41.8, 171.0], [-42.0, 172.0], [-44.0, 171.0], [-43.8, 168.5]],
+        'Canterbury': [[-42.2, 171.5], [-42.5, 174.0], [-44.8, 172.5], [-44.5, 169.5]],
+        'Otago': [[-44.5, 168.5], [-44.8, 171.5], [-46.5, 170.5], [-46.2, 168.0]],
+        'Southland': [[-45.5, 166.5], [-46.0, 168.5], [-46.8, 168.8], [-46.8, 166.2]]
+    },
+
+    // Track the most recent event
+    mostRecentEvent: null,
 
     // NZ bounds
     nzBounds: [
@@ -34,18 +81,44 @@ const MapManager = {
         });
         this.baseTileLayer.addTo(this.map);
 
-        // Initialize layer groups
-        this.layers.earthquakes = L.layerGroup().addTo(this.map);
-        this.layers.volcanoes = L.layerGroup().addTo(this.map);
-        this.layers.weather = L.layerGroup().addTo(this.map);
-        this.layers.warnings = L.layerGroup().addTo(this.map);
-        this.layers.incidents = L.layerGroup().addTo(this.map);
-        this.layers.crime = L.layerGroup().addTo(this.map);
+        // Initialize layer groups (not added to map by default)
+        this.layers.earthquakes = L.layerGroup();
+        this.layers.volcanoes = L.layerGroup();
+        this.layers.weather = L.layerGroup();
+        this.layers.warnings = L.layerGroup();
+        this.layers.incidents = L.layerGroup();
+        this.layers.crime = L.layerGroup();
+        this.layers.mostRecent = L.layerGroup();
+        this.layers.districts = L.layerGroup();
+
+        // Add district overlays (always visible)
+        this.addDistrictOverlays();
 
         // Add major NZ cities as reference
         this.addCityMarkers();
 
         return this;
+    },
+
+    addDistrictOverlays() {
+        Object.entries(this.districtBoundaries).forEach(([name, coords]) => {
+            const color = this.districtColors[name] || '#888';
+            const polygon = L.polygon(coords, {
+                fillColor: color,
+                fillOpacity: 0.12,
+                color: color,
+                weight: 1,
+                opacity: 0.3
+            });
+            polygon.bindTooltip(name, {
+                permanent: false,
+                direction: 'center',
+                className: 'district-tooltip'
+            });
+            this.layers.districts.addLayer(polygon);
+        });
+        // Districts always visible
+        this.layers.districts.addTo(this.map);
     },
 
     addCityMarkers() {
@@ -54,7 +127,18 @@ const MapManager = {
             { name: 'Wellington', lat: -41.29, lng: 174.78 },
             { name: 'Christchurch', lat: -43.53, lng: 172.64 },
             { name: 'Hamilton', lat: -37.79, lng: 175.28 },
-            { name: 'Dunedin', lat: -45.87, lng: 170.50 }
+            { name: 'Dunedin', lat: -45.87, lng: 170.50 },
+            { name: 'Tauranga', lat: -37.69, lng: 176.17 },
+            { name: 'Napier', lat: -39.49, lng: 176.92 },
+            { name: 'Palmerston North', lat: -40.35, lng: 175.61 },
+            { name: 'Nelson', lat: -41.27, lng: 173.28 },
+            { name: 'Queenstown', lat: -45.03, lng: 168.66 },
+            { name: 'Invercargill', lat: -46.41, lng: 168.35 },
+            { name: 'New Plymouth', lat: -39.06, lng: 174.08 },
+            { name: 'Whangarei', lat: -35.73, lng: 174.32 },
+            { name: 'Rotorua', lat: -38.14, lng: 176.25 },
+            { name: 'Gisborne', lat: -38.66, lng: 178.02 },
+            { name: 'Greymouth', lat: -42.45, lng: 171.21 }
         ];
 
         cities.forEach(city => {
@@ -66,7 +150,11 @@ const MapManager = {
                 opacity: 0.8,
                 fillOpacity: 0.6
             });
-            marker.bindTooltip(city.name, { permanent: false, direction: 'top' });
+            marker.bindTooltip(city.name, {
+                permanent: false,
+                direction: 'top',
+                className: 'city-tooltip'
+            });
             this.layers.weather.addLayer(marker);
         });
     },
@@ -180,6 +268,11 @@ const MapManager = {
     regionCoords: {
         'northland': { lat: -35.5, lng: 173.8 },
         'auckland': { lat: -36.85, lng: 174.76 },
+        'hauraki gulf': { lat: -36.5, lng: 175.4 },
+        'hauraki': { lat: -36.5, lng: 175.4 },
+        'waiheke': { lat: -36.8, lng: 175.1 },
+        'great barrier': { lat: -36.2, lng: 175.4 },
+        'rangitoto': { lat: -36.78, lng: 174.86 },
         'waikato': { lat: -37.8, lng: 175.3 },
         'bay of plenty': { lat: -37.8, lng: 176.5 },
         'tauranga': { lat: -37.69, lng: 176.17 },
@@ -415,9 +508,10 @@ const MapManager = {
         });
     },
 
-    // Show only specified layer, hide others
+    // Show only specified layer, hide others (excludes mostRecent and districts)
     showOnlyLayer(layerName) {
         Object.keys(this.layers).forEach(key => {
+            if (key === 'mostRecent' || key === 'districts') return; // Skip special layers
             const layer = this.layers[key];
             if (layer) {
                 if (key === layerName) {
@@ -429,16 +523,140 @@ const MapManager = {
                 }
             }
         });
+        // Always hide mostRecent when showing specific layers
+        if (this.layers.mostRecent && this.map.hasLayer(this.layers.mostRecent)) {
+            this.map.removeLayer(this.layers.mostRecent);
+        }
     },
 
-    // Show all layers
+    // Show all layers (excludes mostRecent and districts)
     showAllLayers() {
         Object.keys(this.layers).forEach(key => {
+            if (key === 'mostRecent' || key === 'districts') return; // Skip special layers
             const layer = this.layers[key];
             if (layer && !this.map.hasLayer(layer)) {
                 this.map.addLayer(layer);
             }
         });
+        // Hide mostRecent when showing all
+        if (this.layers.mostRecent && this.map.hasLayer(this.layers.mostRecent)) {
+            this.map.removeLayer(this.layers.mostRecent);
+        }
+    },
+
+    // Hide all layers (excludes districts - they always stay visible)
+    hideAllLayers() {
+        Object.keys(this.layers).forEach(key => {
+            if (key === 'districts') return; // Districts always visible
+            const layer = this.layers[key];
+            if (layer && this.map.hasLayer(layer)) {
+                this.map.removeLayer(layer);
+            }
+        });
+    },
+
+    // Show only the most recent event marker
+    showMostRecentEvent(event) {
+        this.layers.mostRecent.clearLayers();
+        this.hideAllLayers();
+
+        if (!event) return;
+
+        let marker;
+        const { type, data } = event;
+
+        if (type === 'earthquake') {
+            const coords = data.geometry?.coordinates || [0, 0, 0];
+            const props = data.properties || {};
+            const magnitude = props.magnitude ?? 0;
+            const depth = coords[2] ?? 0;
+            const radius = Math.max(8, (magnitude || 1) * 5);
+            let color = '#ff6b6b';
+            if (depth > 100) color = '#9b59b6';
+            else if (depth > 50) color = '#e74c3c';
+
+            marker = L.circleMarker([coords[1], coords[0]], {
+                radius: radius,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+
+            const magDisplay = typeof magnitude === 'number' ? magnitude.toFixed(1) : '?';
+            const depthDisplay = typeof depth === 'number' ? depth.toFixed(1) : '?';
+            const time = new Date(props.time).toLocaleString('en-NZ');
+            marker.bindPopup(`
+                <div class="popup-title">M${magDisplay} Earthquake</div>
+                <div class="popup-meta">
+                    <div>Depth: ${depthDisplay} km</div>
+                    <div>Time: ${time}</div>
+                    <div>Location: ${props.locality || 'Unknown'}</div>
+                </div>
+            `).openPopup();
+
+        } else if (type === 'warning') {
+            const text = ((data.title || '') + ' ' + (data.description || '')).toLowerCase();
+            let coords = { lat: -40.9, lng: 174.9 };
+            Object.entries(this.regionCoords).forEach(([region, c]) => {
+                if (text.includes(region)) coords = c;
+            });
+
+            const severity = data.severity || 'low';
+            let color = '#ffd93d';
+            if (severity === 'high') color = '#ff6b6b';
+            else if (severity === 'medium') color = '#ff9f43';
+
+            marker = L.circleMarker([coords.lat, coords.lng], {
+                radius: 18,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.7
+            });
+
+            marker.bindPopup(`
+                <div class="popup-title">${data.eventType || 'Weather Warning'}</div>
+                <div class="popup-meta">
+                    <div>${data.title}</div>
+                    <div>Severity: ${severity}</div>
+                </div>
+            `).openPopup();
+
+        } else if (type === 'incident' || type === 'crime') {
+            const text = ((data.title || '') + ' ' + (data.description || '')).toLowerCase();
+            let coords = null;
+            Object.entries(this.regionCoords).forEach(([region, c]) => {
+                if (text.includes(region) && !coords) coords = c;
+            });
+
+            if (!coords) return;
+
+            const color = type === 'crime' ? '#e74c3c' : '#9b59b6';
+            marker = L.circleMarker([coords.lat, coords.lng], {
+                radius: 14,
+                fillColor: color,
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.7
+            });
+
+            marker.bindPopup(`
+                <div class="popup-title">${data.title || 'Event'}</div>
+                <div class="popup-meta">
+                    <div>${data.description ? data.description.substring(0, 150) + '...' : ''}</div>
+                    <div>Source: ${data.source || 'News'}</div>
+                </div>
+            `).openPopup();
+        }
+
+        if (marker) {
+            this.layers.mostRecent.addLayer(marker);
+            this.map.addLayer(this.layers.mostRecent);
+        }
     },
 
     // Pan to location

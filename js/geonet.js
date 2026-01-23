@@ -92,11 +92,15 @@ const GeoNet = {
     // Render volcanic alerts to sidebar
     renderVolcanoes(volcanoes, containerId) {
         const container = document.getElementById(containerId);
+        const countEl = document.getElementById('volcano-count');
 
         if (!volcanoes || volcanoes.length === 0) {
             container.innerHTML = '<div class="error">No volcanic data available</div>';
+            if (countEl) countEl.textContent = '0';
             return;
         }
+
+        if (countEl) countEl.textContent = volcanoes.length;
 
         // Sort by alert level (highest first)
         volcanoes.sort((a, b) => b.level - a.level);

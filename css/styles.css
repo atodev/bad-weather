@@ -146,6 +146,70 @@ main {
     box-shadow: 0 0 6px #e74c3c;
 }
 
+/* District legend - bottom right */
+#district-legend {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(26, 26, 46, 0.9);
+    padding: 0.75rem;
+    border-radius: 8px;
+    z-index: 1000;
+    border: 1px solid #333;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+#district-legend h4 {
+    margin-bottom: 0.4rem;
+    color: #aaa;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.district-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: #bbb;
+    margin: 0.15rem 0;
+}
+
+.district-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    opacity: 0.7;
+}
+
+/* City tooltip styling */
+.city-tooltip {
+    background: rgba(26, 26, 46, 0.9);
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #c8d6e5;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.city-tooltip::before {
+    border-top-color: rgba(26, 26, 46, 0.9);
+}
+
+/* District tooltip styling */
+.district-tooltip {
+    background: rgba(26, 26, 46, 0.85);
+    border: 1px solid #555;
+    border-radius: 4px;
+    color: #a0a0a0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
 #sidebar {
     width: 380px;
     background: #16213e;
@@ -440,6 +504,138 @@ main {
     color: #aaa;
 }
 
+/* Subtle map attribution */
+.leaflet-control-attribution {
+    background: rgba(0, 0, 0, 0.3) !important;
+    color: #555 !important;
+    font-size: 0.55rem !important;
+    padding: 2px 5px !important;
+}
+
+.leaflet-control-attribution a {
+    color: #666 !important;
+}
+
+/* Donate Button */
+#donate-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(100, 149, 237, 0.7);
+    color: #fff;
+    border: 1px solid rgba(135, 175, 255, 0.5);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+#donate-btn:hover {
+    background: rgba(100, 149, 237, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(100, 149, 237, 0.4);
+}
+
+/* Donate Floating Popup */
+#donate-popup {
+    display: none;
+    position: fixed;
+    bottom: 60px;
+    right: 20px;
+    width: 280px;
+    background: #16213e;
+    border-radius: 10px;
+    padding: 1rem;
+    z-index: 2000;
+    border: 1px solid #444;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#donate-popup.active {
+    display: block;
+}
+
+#donate-popup h2 {
+    margin: 0 0 0.5rem 0;
+    color: #fff;
+    font-size: 1rem;
+    padding-right: 24px;
+}
+
+#donate-popup > p {
+    color: #888;
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.popup-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.popup-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Donate Links */
+.donate-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.donate-link {
+    display: block;
+    padding: 0.5rem 0.6rem;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 6px;
+    text-decoration: none;
+    color: #ccc;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.donate-link:hover {
+    background: rgba(100, 149, 237, 0.2);
+    border-color: rgba(100, 149, 237, 0.4);
+    color: #fff;
+}
+
+.donate-link .donate-icon {
+    margin-right: 0.4rem;
+}
+
+.popup-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #333;
+    text-align: center;
+    font-size: 0.65rem;
+    color: #555;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
     main {
@@ -453,5 +649,16 @@ main {
     #sidebar {
         width: 100%;
         height: 50vh;
+    }
+
+    #donate-btn {
+        bottom: 10px;
+        right: 10px;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .popup-content {
+        padding: 1.5rem;
     }
 }

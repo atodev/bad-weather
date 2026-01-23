@@ -1,15 +1,29 @@
 // Main application controller
 const App = {
     refreshIntervals: {
-        earthquakes: 60000,    // 1 minute
+        earthquakes: 300000,   // 5 minutes
         volcanoes: 300000,     // 5 minutes
-        weather: 900000,       // 15 minutes
+        weather: 300000,       // 5 minutes
         warnings: 300000,      // 5 minutes
         incidents: 300000,     // 5 minutes
         crime: 300000          // 5 minutes
     },
 
     timers: {},
+
+    // Track the most recent event for initial display
+    mostRecentEvent: null,
+
+    // 24-hour time window (in milliseconds)
+    timeWindowMs: 24 * 60 * 60 * 1000,
+
+    // Check if a timestamp is within the last 24 hours
+    isWithin24Hours(timestamp) {
+        if (!timestamp) return false;
+        const eventTime = new Date(timestamp).getTime();
+        const now = Date.now();
+        return (now - eventTime) <= this.timeWindowMs;
+    },
 
     // Initialize the application
     async init() {
@@ -20,6 +34,11 @@ const App = {
 
         // Load all data
         await this.loadAllData();
+
+        // Show only the most recent event on map
+        if (this.mostRecentEvent) {
+            MapManager.showMostRecentEvent(this.mostRecentEvent);
+        }
 
         // Set up auto-refresh
         this.setupAutoRefresh();
@@ -46,7 +65,24 @@ const App = {
             if (panel) {
                 const heading = panel.querySelector('h3');
                 if (heading) {
-                    // Click to toggle - show only this layer
+                    // Hover to temporarily show layer
+                    heading.addEventListener('mouseenter', () => {
+                        // Only show on hover if no panel is filter-active
+                        const anyActive = document.querySelector('.panel.filter-active');
+                        if (!anyActive) {
+                            MapManager.showOnlyLayer(layerName);
+                        }
+                    });
+
+                    heading.addEventListener('mouseleave', () => {
+                        // Return to most recent event on leave if no panel is filter-active
+                        const anyActive = document.querySelector('.panel.filter-active');
+                        if (!anyActive && this.mostRecentEvent) {
+                            MapManager.showMostRecentEvent(this.mostRecentEvent);
+                        }
+                    });
+
+                    // Click to toggle - expand panel and show only this layer
                     heading.addEventListener('click', (e) => {
                         // Don't filter if clicking the collapse arrow area
                         if (e.target.classList.contains('count')) return;
@@ -54,15 +90,21 @@ const App = {
                         // Toggle active state
                         const wasActive = panel.classList.contains('filter-active');
 
-                        // Remove active from all panels
-                        document.querySelectorAll('.panel').forEach(p => p.classList.remove('filter-active'));
+                        // Remove active from all panels and collapse them
+                        document.querySelectorAll('.panel').forEach(p => {
+                            p.classList.remove('filter-active');
+                            p.classList.add('collapsed');
+                        });
 
                         if (wasActive) {
-                            // Was active, show all layers
-                            MapManager.showAllLayers();
+                            // Was active, return to most recent event
+                            if (this.mostRecentEvent) {
+                                MapManager.showMostRecentEvent(this.mostRecentEvent);
+                            }
                         } else {
-                            // Activate this filter
+                            // Activate this filter, expand panel
                             panel.classList.add('filter-active');
+                            panel.classList.remove('collapsed');
                             MapManager.showOnlyLayer(layerName);
                         }
                     });
@@ -74,6 +116,7 @@ const App = {
     // Load all data sources
     async loadAllData() {
         this.updateLastUpdate();
+        this.mostRecentEvent = null; // Reset to find fresh most recent
 
         // Load all data in parallel
         await Promise.all([
@@ -89,11 +132,21 @@ const App = {
     // Load weather warnings from MetService
     async loadWeatherWarnings() {
         try {
-            const warnings = await Feeds.getWeatherWarnings();
+            const allWarnings = await Feeds.getWeatherWarnings();
+
+            // Filter to only show warnings from the last 24 hours
+            const warnings = Array.isArray(allWarnings)
+                ? allWarnings.filter(w => this.isWithin24Hours(w.pubDate))
+                : [];
+
             Feeds.renderWeatherWarnings(warnings, 'warnings-content');
             // Add warnings to map
-            if (Array.isArray(warnings)) {
+            if (warnings.length > 0) {
                 MapManager.addWarnings(warnings);
+                // Track most recent warning
+                const latest = warnings[0];
+                const time = new Date(latest.pubDate || 0);
+                this.updateMostRecent({ type: 'warning', data: latest, time });
             }
         } catch (error) {
             console.error('Error loading weather warnings:', error);
@@ -108,9 +161,22 @@ const App = {
             const response = await fetch('https://api.geonet.org.nz/quake?MMI=2');
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-            const quakes = data.features || [];
+            const allQuakes = data.features || [];
+
+            // Filter to only show earthquakes from the last 24 hours
+            const quakes = allQuakes.filter(q =>
+                this.isWithin24Hours(q.properties?.time)
+            );
+
             GeoNet.renderEarthquakes(quakes, 'earthquake-content');
             MapManager.addEarthquakes(quakes);
+
+            // Track most recent earthquake
+            if (quakes.length > 0) {
+                const latest = quakes[0]; // Already sorted by time
+                const time = new Date(latest.properties?.time || 0);
+                this.updateMostRecent({ type: 'earthquake', data: latest, time });
+            }
         } catch (error) {
             console.error('Error loading earthquakes:', error);
             const container = document.getElementById('earthquake-content');
@@ -157,11 +223,21 @@ const App = {
     // Load incident feeds
     async loadIncidents() {
         try {
-            const incidents = await Feeds.getAllIncidents();
+            const allIncidents = await Feeds.getAllIncidents();
+
+            // Filter to only show incidents from the last 24 hours
+            const incidents = Array.isArray(allIncidents)
+                ? allIncidents.filter(i => this.isWithin24Hours(i.pubDate))
+                : [];
+
             Feeds.renderIncidents(incidents, 'incidents-content');
             // Add incidents to map
-            if (Array.isArray(incidents)) {
+            if (incidents.length > 0) {
                 MapManager.addIncidents(incidents);
+                // Track most recent incident
+                const latest = incidents[0];
+                const time = new Date(latest.pubDate || 0);
+                this.updateMostRecent({ type: 'incident', data: latest, time });
             }
         } catch (error) {
             console.error('Error loading incidents:', error);
@@ -173,11 +249,21 @@ const App = {
     // Load crime and civil unrest data
     async loadCrime() {
         try {
-            const crimeItems = await Feeds.getAllCrimeItems();
+            const allCrimeItems = await Feeds.getAllCrimeItems();
+
+            // Filter to only show crime from the last 24 hours
+            const crimeItems = Array.isArray(allCrimeItems)
+                ? allCrimeItems.filter(c => this.isWithin24Hours(c.pubDate))
+                : [];
+
             Feeds.renderCrime(crimeItems, 'crime-content');
             // Add crime to map
-            if (Array.isArray(crimeItems)) {
+            if (crimeItems.length > 0) {
                 MapManager.addCrime(crimeItems);
+                // Track most recent crime item
+                const latest = crimeItems[0];
+                const time = new Date(latest.pubDate || 0);
+                this.updateMostRecent({ type: 'crime', data: latest, time });
             }
         } catch (error) {
             console.error('Error loading crime data:', error);
@@ -188,35 +274,48 @@ const App = {
 
     // Set up auto-refresh timers
     setupAutoRefresh() {
+        // Wrapper to refresh data and update display
+        const refreshAndUpdate = async (loadFn) => {
+            await loadFn.call(this);
+            this.updateLastUpdate();
+            // Update map display if no panel filter is active
+            const anyActive = document.querySelector('.panel.filter-active');
+            if (!anyActive && this.mostRecentEvent) {
+                MapManager.showMostRecentEvent(this.mostRecentEvent);
+            }
+        };
+
         this.timers.warnings = setInterval(
-            () => this.loadWeatherWarnings(),
+            () => refreshAndUpdate(this.loadWeatherWarnings),
             this.refreshIntervals.warnings
         );
 
         this.timers.earthquakes = setInterval(
-            () => this.loadEarthquakes(),
+            () => refreshAndUpdate(this.loadEarthquakes),
             this.refreshIntervals.earthquakes
         );
 
         this.timers.volcanoes = setInterval(
-            () => this.loadVolcanoes(),
+            () => refreshAndUpdate(this.loadVolcanoes),
             this.refreshIntervals.volcanoes
         );
 
         this.timers.weather = setInterval(
-            () => this.loadWeather(),
+            () => refreshAndUpdate(this.loadWeather),
             this.refreshIntervals.weather
         );
 
         this.timers.incidents = setInterval(
-            () => this.loadIncidents(),
+            () => refreshAndUpdate(this.loadIncidents),
             this.refreshIntervals.incidents
         );
 
         this.timers.crime = setInterval(
-            () => this.loadCrime(),
+            () => refreshAndUpdate(this.loadCrime),
             this.refreshIntervals.crime
         );
+
+        console.log('Auto-refresh set up: every 5 minutes');
     },
 
     // Update last update timestamp
@@ -224,6 +323,13 @@ const App = {
         const el = document.getElementById('last-update');
         const now = new Date();
         el.textContent = `Last update: ${now.toLocaleTimeString('en-NZ')}`;
+    },
+
+    // Update most recent event if this one is newer
+    updateMostRecent(event) {
+        if (!this.mostRecentEvent || event.time > this.mostRecentEvent.time) {
+            this.mostRecentEvent = event;
+        }
     }
 };
 
@@ -236,11 +342,21 @@ function refreshAll() {
     App.loadAllData().then(() => {
         btn.textContent = 'Refresh';
         btn.disabled = false;
+        // Update map if no panel filter active
+        const anyActive = document.querySelector('.panel.filter-active');
+        if (!anyActive && App.mostRecentEvent) {
+            MapManager.showMostRecentEvent(App.mostRecentEvent);
+        }
     });
 }
 
 // Toggle panel collapse
 function setupPanelToggles() {
+    // Collapse all panels on init
+    document.querySelectorAll('.panel').forEach(panel => {
+        panel.classList.add('collapsed');
+    });
+
     document.querySelectorAll('.panel h3').forEach(header => {
         header.addEventListener('click', (e) => {
             // Don't toggle if clicking on the count badge
@@ -254,16 +370,35 @@ function setupPanelToggles() {
             localStorage.setItem('collapsedPanels', JSON.stringify(collapsed));
         });
     });
-
-    // Restore collapsed state from localStorage
-    const collapsed = JSON.parse(localStorage.getItem('collapsedPanels') || '{}');
-    Object.entries(collapsed).forEach(([panelId, isCollapsed]) => {
-        if (isCollapsed) {
-            const panel = document.getElementById(panelId);
-            if (panel) panel.classList.add('collapsed');
-        }
-    });
 }
+
+// Donate popup functions
+function openDonatePopup() {
+    const popup = document.getElementById('donate-popup');
+    popup.classList.toggle('active');
+}
+
+function closeDonatePopup() {
+    document.getElementById('donate-popup').classList.remove('active');
+}
+
+// Close popup with Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeDonatePopup();
+    }
+});
+
+// Close popup when clicking outside
+document.addEventListener('click', (e) => {
+    const popup = document.getElementById('donate-popup');
+    const btn = document.getElementById('donate-btn');
+    if (popup.classList.contains('active') &&
+        !popup.contains(e.target) &&
+        e.target !== btn) {
+        closeDonatePopup();
+    }
+});
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {

@@ -65,14 +65,14 @@
             </div>
 
             <div class="panel" id="volcano-panel">
-                <h3>Volcanic Alert Levels</h3>
+                <h3>Volcanic Alert Levels <span class="count" id="volcano-count">0</span></h3>
                 <div class="panel-content" id="volcano-content">
                     <div class="loading">Loading volcanic data...</div>
                 </div>
             </div>
 
             <div class="panel" id="incidents-panel">
-                <h3>Emergency Incidents</h3>
+                <h3>Emergency Incidents <span class="count" id="incidents-count">0</span></h3>
                 <div class="panel-content" id="incidents-content">
                     <div class="loading">Loading incident data...</div>
                 </div>
@@ -86,6 +86,32 @@
             </div>
         </aside>
     </main>
+
+    <!-- Footer Buttons -->
+    <a href="https://github.com/atodev" target="_blank" id="developer-btn">Developer</a>
+    <button id="donate-btn" onclick="openDonatePopup()">Support Recovery</button>
+
+    <!-- Donate Popup -->
+    <div id="donate-popup">
+        <button class="popup-close" onclick="closeDonatePopup()">&times;</button>
+        <h2>Support Recovery</h2>
+        <p>Help NZ communities after disasters</p>
+        <div class="donate-links">
+            <a href="https://www.redcross.org.nz/donate" target="_blank" class="donate-link">
+                <span class="donate-icon">❤️</span> NZ Red Cross
+            </a>
+            <a href="https://www.salvationarmy.org.nz/donate" target="_blank" class="donate-link">
+                <span class="donate-icon">🛡️</span> Salvation Army NZ
+            </a>
+            <a href="https://givealittle.co.nz/discover/causes/disaster-relief" target="_blank" class="donate-link">
+                <span class="donate-icon">🤝</span> Givealittle
+            </a>
+            <a href="https://www.civildefence.govt.nz/get-ready" target="_blank" class="donate-link">
+                <span class="donate-icon">📋</span> Get Ready Get Thru
+            </a>
+        </div>
+        <p class="popup-footer">Every donation helps rebuild</p>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/map.js"></script>

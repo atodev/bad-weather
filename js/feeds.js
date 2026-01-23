@@ -3,7 +3,9 @@ const Feeds = {
     // Multiple CORS proxies to try (fallback chain)
     corsProxies: [
         'https://api.allorigins.win/raw?url=',
-        'https://api.codetabs.com/v1/proxy/?quest='
+        'https://corsproxy.io/?',
+        'https://api.codetabs.com/v1/proxy/?quest=',
+        'https://thingproxy.freeboard.io/fetch/'
     ],
 
     // NZ RSS feed sources
@@ -14,25 +16,45 @@ const Feeds = {
         stuff: 'https://www.stuff.co.nz/rss'
     },
 
-    // Fetch with proxy fallback
+    // Fetch with proxy fallback and timeout
     async fetchWithProxy(url) {
         for (const proxy of this.corsProxies) {
             try {
-                // allorigins needs URL encoding, codetabs doesn't
-                const proxyUrl = proxy.includes('codetabs')
-                    ? proxy + url
-                    : proxy + encodeURIComponent(url);
+                // Build proxy URL based on proxy type
+                let proxyUrl;
+                if (proxy.includes('codetabs')) {
+                    proxyUrl = proxy + url;
+                } else if (proxy.includes('corsproxy.io')) {
+                    proxyUrl = proxy + encodeURIComponent(url);
+                } else if (proxy.includes('thingproxy')) {
+                    proxyUrl = proxy + url;
+                } else {
+                    proxyUrl = proxy + encodeURIComponent(url);
+                }
+
+                // Add timeout using AbortController
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+
                 const response = await fetch(proxyUrl, {
-                    headers: { 'Accept': 'application/rss+xml, application/xml, text/xml' }
+                    headers: { 'Accept': 'application/rss+xml, application/xml, text/xml' },
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
+
                 if (response.ok) {
                     const text = await response.text();
                     if (text && (text.includes('<item>') || text.includes('<entry>'))) {
+                        console.log(`Feed fetched successfully via ${proxy}`);
                         return text;
                     }
                 }
             } catch (e) {
-                console.log(`Proxy ${proxy} failed, trying next...`);
+                if (e.name === 'AbortError') {
+                    console.log(`Proxy ${proxy} timed out, trying next...`);
+                } else {
+                    console.log(`Proxy ${proxy} failed: ${e.message}, trying next...`);
+                }
             }
         }
         return null;
@@ -144,6 +166,7 @@ const Feeds = {
         'taranaki', 'manawatu', 'wairarapa', 'marlborough', 'canterbury',
         'otago', 'southland', 'west coast', 'fiordland', 'coromandel',
         'mount maunganui', 'papamoa', 'tairua', 'thames', 'whitianga',
+        'hauraki gulf', 'hauraki', 'waiheke', 'great barrier', 'rangitoto',
         'taupo', 'masterton', 'lower hutt', 'upper hutt', 'porirua',
         'kapiti', 'levin', 'feilding', 'whakatane', 'opotiki', 'kawerau',
         'te puke', 'katikati', 'oamaru', 'ashburton', 'rangiora', 'kaikoura',
@@ -161,24 +184,60 @@ const Feeds = {
         return this.nzKeywords.some(keyword => text.includes(keyword));
     },
 
+    // Exclusion keywords - filter out sports, entertainment, lifestyle content
+    exclusionKeywords: [
+        // Sports
+        'rugby', 'cricket', 'netball', 'basketball', 'football', 'soccer',
+        'all blacks', 'black caps', 'silver ferns', 'breakers', 'warriors',
+        'nbl', 'super rugby', 'anb', 'phoenix', 'chiefs', 'blues', 'hurricanes',
+        'crusaders', 'highlanders', 'sport', 'match', 'game', 'tournament',
+        'championship', 'league', 'cup final', 'semifinal', 'quarter-final',
+        'played', 'scored', 'goal', 'try', 'wicket', 'batting', 'bowling',
+        'coach', 'player', 'team', 'fixture', 'season', 'halftime', 'overtime',
+        '36ers', 'nba', 'afl', 'nrl', 'a-league',
+        // Entertainment
+        'movie', 'film', 'album', 'concert', 'tour', 'festival', 'music',
+        'celebrity', 'actor', 'actress', 'singer', 'band', 'award',
+        'grammy', 'oscar', 'emmy', 'tv show', 'reality tv', 'streaming',
+        // Lifestyle/Business
+        'recipe', 'restaurant', 'review', 'travel', 'holiday', 'vacation',
+        'stock market', 'shares', 'investment', 'property market', 'real estate',
+        'fashion', 'beauty', 'wellness', 'fitness', 'diet',
+        // Politics (unless emergency)
+        'election', 'poll', 'campaign', 'candidate', 'parliament', 'mp ',
+        'minister', 'coalition', 'opposition', 'policy', 'bill passed'
+    ],
+
+    // Check if content should be excluded
+    shouldExclude(text) {
+        const lowerText = text.toLowerCase();
+        return this.exclusionKeywords.some(keyword => lowerText.includes(keyword));
+    },
+
     // Filter for emergency/incident related content
     filterIncidents(items) {
         const keywords = [
-            'incident', 'emergency', 'fire', 'crash', 'accident',
+            'incident', 'emergency', 'crash', 'accident',
             'police', 'rescue', 'storm', 'flood', 'warning',
             'alert', 'earthquake', 'tsunami', 'weather', 'road closure',
             'missing', 'serious', 'death', 'fatality', 'injury',
             'landslide', 'slip', 'landslip', 'evacuate', 'evacuation',
             'cyclone', 'tornado', 'severe', 'damage', 'power outage',
             'road closed', 'highway closed', 'state highway', 'trapped',
-            'civil defence', 'search and rescue', 'metservice'
+            'civil defence', 'search and rescue', 'metservice',
+            // Fire-related
+            'fire', 'blaze', 'wildfire', 'bushfire', 'scrub fire', 'house fire',
+            'structure fire', 'vegetation fire', 'forest fire', 'firefighters',
+            'fenz', 'fire and emergency', 'arson', 'flames', 'burning',
+            'fire crews', 'fire brigade', 'inferno'
         ];
 
         return items.filter(item => {
             const text = (item.title + ' ' + item.description).toLowerCase();
             const hasKeyword = keywords.some(keyword => text.includes(keyword));
             const isNZ = this.isNZRelated(item);
-            return hasKeyword && isNZ;
+            const excluded = this.shouldExclude(text);
+            return hasKeyword && isNZ && !excluded;
         });
     },
 
@@ -462,7 +521,7 @@ const Feeds = {
             'fraud', 'scam', 'scammer', 'swindle', 'money laundering',
             'gang', 'gangs', 'organised crime', 'syndicate',
             'protest', 'protests', 'protester', 'protesters', 'demonstration',
-            'rally', 'march', 'riot', 'rioting', 'unrest', 'civil unrest',
+            'riot', 'rioting', 'unrest', 'civil unrest',
             'occupation', 'blockade', 'disruption',
             'threatening', 'threat', 'intimidation', 'harassment',
             'kidnapping', 'abduction', 'hostage',
@@ -476,7 +535,8 @@ const Feeds = {
             const text = (item.title + ' ' + item.description).toLowerCase();
             const hasKeyword = keywords.some(keyword => text.includes(keyword));
             const isNZ = this.isNZRelated(item);
-            return hasKeyword && isNZ;
+            const excluded = this.shouldExclude(text);
+            return hasKeyword && isNZ && !excluded;
         });
     },
 
@@ -673,6 +733,7 @@ const Feeds = {
     // Render incidents to sidebar
     renderIncidents(incidents, containerId) {
         const container = document.getElementById(containerId);
+        const countEl = document.getElementById('incidents-count');
 
         if (!incidents || incidents.length === 0) {
             container.innerHTML = `
@@ -681,10 +742,12 @@ const Feeds = {
                     <small style="color: #666">RSS feeds may be blocked by CORS policy.</small>
                 </div>
             `;
+            if (countEl) countEl.textContent = '0';
             return;
         }
 
         const isDirectLinks = incidents[0]?.source === 'Direct Link';
+        if (countEl) countEl.textContent = isDirectLinks ? '?' : incidents.length;
 
         container.innerHTML = incidents.map(incident => {
             const readableDate = this.formatDateReadable(incident.pubDate);
