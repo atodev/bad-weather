@@ -81,23 +81,24 @@ main {
     width: 100%;
     height: 100%;
     min-height: 600px;
-    background: #0f3460;
+    background: #5fb3a1;
 }
 
 #map-legend {
     position: absolute;
     bottom: 20px;
     left: 20px;
-    background: rgba(26, 26, 46, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     padding: 1rem;
     border-radius: 8px;
     z-index: 1000;
-    border: 1px solid #333;
+    border: 1px solid #d0d7de;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 #map-legend h4 {
     margin-bottom: 0.5rem;
-    color: #aaa;
+    color: #57606a;
     font-size: 0.8rem;
     text-transform: uppercase;
 }
@@ -108,6 +109,7 @@ main {
     gap: 0.5rem;
     font-size: 0.85rem;
     margin: 0.3rem 0;
+    color: #24292f;
 }
 
 .legend-marker {
@@ -151,18 +153,19 @@ main {
     position: absolute;
     bottom: 20px;
     right: 20px;
-    background: rgba(26, 26, 46, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     padding: 0.75rem;
     border-radius: 8px;
     z-index: 1000;
-    border: 1px solid #333;
+    border: 1px solid #d0d7de;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     max-height: 280px;
     overflow-y: auto;
 }
 
 #district-legend h4 {
     margin-bottom: 0.4rem;
-    color: #aaa;
+    color: #57606a;
     font-size: 0.7rem;
     text-transform: uppercase;
 }
@@ -172,7 +175,7 @@ main {
     align-items: center;
     gap: 0.4rem;
     font-size: 0.7rem;
-    color: #bbb;
+    color: #24292f;
     margin: 0.15rem 0;
 }
 
@@ -185,47 +188,47 @@ main {
 
 /* City tooltip styling */
 .city-tooltip {
-    background: rgba(26, 26, 46, 0.9);
-    border: 1px solid #444;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #d0d7de;
     border-radius: 4px;
-    color: #c8d6e5;
+    color: #24292f;
     font-size: 0.75rem;
     padding: 4px 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .city-tooltip::before {
-    border-top-color: rgba(26, 26, 46, 0.9);
+    border-top-color: rgba(255, 255, 255, 0.95);
 }
 
 /* District tooltip styling */
 .district-tooltip {
-    background: rgba(26, 26, 46, 0.85);
-    border: 1px solid #555;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #d0d7de;
     border-radius: 4px;
-    color: #a0a0a0;
+    color: #24292f;
     font-size: 0.8rem;
     font-weight: 500;
     padding: 4px 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 #sidebar {
     width: 380px;
-    background: #16213e;
+    background: #f6f8fa;
     overflow-y: auto;
-    border-left: 1px solid #333;
+    border-left: 1px solid #d0d7de;
 }
 
 .panel {
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #d0d7de;
 }
 
 .panel h3 {
-    background: rgba(0, 0, 0, 0.2);
+    background: #ffffff;
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
-    color: #fff;
+    color: #24292f;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -238,13 +241,13 @@ main {
 }
 
 .panel h3:hover {
-    background: rgba(74, 144, 217, 0.3);
+    background: #e8f4fc;
 }
 
 .panel h3::after {
     content: '▼';
     font-size: 0.7rem;
-    color: #888;
+    color: #57606a;
     margin-left: 0.5rem;
     transition: transform 0.3s;
 }
@@ -258,17 +261,17 @@ main {
 }
 
 .panel.filter-active h3 {
-    background: rgba(74, 144, 217, 0.4);
-    border-left: 3px solid #4a90d9;
+    background: #ddf4ff;
+    border-left: 3px solid #0969da;
 }
 
 .panel.filter-active h3::before {
     content: '◉ ';
-    color: #4ecdc4;
+    color: #0969da;
 }
 
 .count {
-    background: #4a90d9;
+    background: #0969da;
     color: #fff;
     padding: 0.15rem 0.5rem;
     border-radius: 10px;
@@ -276,7 +279,7 @@ main {
 }
 
 .count.warning-count {
-    background: #ff6b6b;
+    background: #cf222e;
     animation: pulse-warning 2s infinite;
 }
 
@@ -286,89 +289,95 @@ main {
 }
 
 #warnings-panel {
-    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, transparent 100%);
+    background: linear-gradient(135deg, rgba(207, 34, 46, 0.08) 0%, transparent 100%);
 }
 
 #warnings-panel h3 {
-    background: rgba(255, 107, 107, 0.2);
+    background: rgba(207, 34, 46, 0.1);
 }
 
 .panel-content {
     padding: 0.5rem;
     max-height: 250px;
     overflow-y: auto;
+    background: #f6f8fa;
 }
 
 .loading {
     text-align: center;
     padding: 2rem;
-    color: #666;
+    color: #57606a;
 }
 
 /* Alert Items */
 .alert-item {
-    background: rgba(0, 0, 0, 0.2);
+    background: #ffffff;
     border-radius: 6px;
     padding: 0.75rem;
     margin-bottom: 0.5rem;
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
+    border: 1px solid #d0d7de;
 }
 
 .alert-item:hover {
-    background: rgba(74, 144, 217, 0.2);
+    background: #e8f4fc;
     transform: translateX(2px);
 }
 
 .alert-item.severity-high {
-    border-left: 3px solid #ff6b6b;
+    border-left: 3px solid #cf222e;
 }
 
 .alert-item.severity-medium {
-    border-left: 3px solid #ffd93d;
+    border-left: 3px solid #bf8700;
 }
 
 .alert-item.severity-low {
-    border-left: 3px solid #6bcf63;
+    border-left: 3px solid #1a7f37;
 }
 
 .alert-item .title {
     font-weight: 600;
     font-size: 0.9rem;
     margin-bottom: 0.25rem;
+    color: #24292f;
 }
 
 .alert-item .meta {
     font-size: 0.75rem;
-    color: #888;
+    color: #57606a;
     display: flex;
     justify-content: space-between;
 }
 
 .alert-item .description {
     font-size: 0.8rem;
-    color: #aaa;
+    color: #57606a;
     margin-top: 0.3rem;
     line-height: 1.4;
 }
 
 /* Weather Card */
 .weather-card {
-    background: linear-gradient(135deg, #1e3a5f 0%, #16213e 100%);
+    background: linear-gradient(135deg, #e8f4fc 0%, #ffffff 100%);
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 0.5rem;
+    border: 1px solid #d0d7de;
 }
 
 .weather-card .city {
     font-size: 1rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: #24292f;
 }
 
 .weather-card .temp {
     font-size: 2rem;
     font-weight: 300;
+    color: #0969da;
 }
 
 .weather-card .conditions {
@@ -376,7 +385,7 @@ main {
     gap: 1rem;
     margin-top: 0.5rem;
     font-size: 0.8rem;
-    color: #aaa;
+    color: #57606a;
 }
 
 .weather-card .condition {
@@ -387,17 +396,19 @@ main {
 
 /* Volcano Card */
 .volcano-card {
-    background: rgba(0, 0, 0, 0.2);
+    background: #ffffff;
     border-radius: 6px;
     padding: 0.75rem;
     margin-bottom: 0.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 1px solid #d0d7de;
 }
 
 .volcano-card .name {
     font-weight: 500;
+    color: #24292f;
 }
 
 .volcano-card .level {
@@ -408,49 +419,51 @@ main {
 }
 
 .volcano-card .level-0 {
-    background: #6bcf63;
-    color: #000;
+    background: #1a7f37;
+    color: #fff;
 }
 
 .volcano-card .level-1 {
-    background: #ffd93d;
-    color: #000;
+    background: #bf8700;
+    color: #fff;
 }
 
 .volcano-card .level-2 {
-    background: #ff9f43;
-    color: #000;
+    background: #bc4c00;
+    color: #fff;
 }
 
 .volcano-card .level-3,
 .volcano-card .level-4,
 .volcano-card .level-5 {
-    background: #ff6b6b;
+    background: #cf222e;
     color: #fff;
 }
 
 /* Incident Item */
 .incident-item {
-    background: rgba(0, 0, 0, 0.2);
+    background: #ffffff;
     border-radius: 6px;
     padding: 0.75rem;
     margin-bottom: 0.5rem;
+    border: 1px solid #d0d7de;
 }
 
 .incident-item .title {
     font-weight: 500;
     font-size: 0.85rem;
     margin-bottom: 0.25rem;
+    color: #24292f;
 }
 
 .incident-item .time {
     font-size: 0.75rem;
-    color: #888;
+    color: #57606a;
 }
 
 .incident-item .source {
     font-size: 0.7rem;
-    color: #4a90d9;
+    color: #0969da;
     margin-top: 0.3rem;
 }
 
@@ -514,6 +527,30 @@ main {
 
 .leaflet-control-attribution a {
     color: #666 !important;
+}
+
+/* Developer Button */
+#developer-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 160px;
+    background: rgba(80, 80, 100, 0.6);
+    color: #aaa;
+    border: 1px solid rgba(100, 100, 120, 0.5);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+#developer-btn:hover {
+    background: rgba(100, 100, 120, 0.8);
+    color: #fff;
+    transform: translateY(-2px);
 }
 
 /* Donate Button */
@@ -649,6 +686,13 @@ main {
     #sidebar {
         width: 100%;
         height: 50vh;
+    }
+
+    #developer-btn {
+        bottom: 10px;
+        right: 120px;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
     }
 
     #donate-btn {

@@ -35,10 +35,8 @@ const App = {
         // Load all data
         await this.loadAllData();
 
-        // Show only the most recent event on map
-        if (this.mostRecentEvent) {
-            MapManager.showMostRecentEvent(this.mostRecentEvent);
-        }
+        // Hide all markers on initial load (user hovers/clicks panels to show)
+        MapManager.hideAllLayers();
 
         // Set up auto-refresh
         this.setupAutoRefresh();
@@ -75,10 +73,10 @@ const App = {
                     });
 
                     heading.addEventListener('mouseleave', () => {
-                        // Return to most recent event on leave if no panel is filter-active
+                        // Hide all layers on leave if no panel is filter-active
                         const anyActive = document.querySelector('.panel.filter-active');
-                        if (!anyActive && this.mostRecentEvent) {
-                            MapManager.showMostRecentEvent(this.mostRecentEvent);
+                        if (!anyActive) {
+                            MapManager.hideAllLayers();
                         }
                     });
 
@@ -97,10 +95,8 @@ const App = {
                         });
 
                         if (wasActive) {
-                            // Was active, return to most recent event
-                            if (this.mostRecentEvent) {
-                                MapManager.showMostRecentEvent(this.mostRecentEvent);
-                            }
+                            // Was active, hide all layers
+                            MapManager.hideAllLayers();
                         } else {
                             // Activate this filter, expand panel
                             panel.classList.add('filter-active');
@@ -278,10 +274,10 @@ const App = {
         const refreshAndUpdate = async (loadFn) => {
             await loadFn.call(this);
             this.updateLastUpdate();
-            // Update map display if no panel filter is active
+            // Keep map hidden if no panel filter is active
             const anyActive = document.querySelector('.panel.filter-active');
-            if (!anyActive && this.mostRecentEvent) {
-                MapManager.showMostRecentEvent(this.mostRecentEvent);
+            if (!anyActive) {
+                MapManager.hideAllLayers();
             }
         };
 
@@ -342,10 +338,10 @@ function refreshAll() {
     App.loadAllData().then(() => {
         btn.textContent = 'Refresh';
         btn.disabled = false;
-        // Update map if no panel filter active
+        // Keep map hidden if no panel filter active
         const anyActive = document.querySelector('.panel.filter-active');
-        if (!anyActive && App.mostRecentEvent) {
-            MapManager.showMostRecentEvent(App.mostRecentEvent);
+        if (!anyActive) {
+            MapManager.hideAllLayers();
         }
     });
 }

@@ -13,25 +13,25 @@ const MapManager = {
     },
     baseTileLayer: null,
 
-    // District colors (subtle translucent)
+    // District colors (more vibrant for light background)
     districtColors: {
-        'Northland': '#ffd93d',
-        'Auckland': '#ff6b6b',
-        'Hauraki Gulf': '#00bcd4',
-        'Waikato': '#6bcf63',
-        'Bay of Plenty': '#ffa500',
-        'Gisborne': '#e056fd',
-        'Hawkes Bay': '#f0932b',
-        'Taranaki': '#eb4d4b',
-        'Manawatu-Whanganui': '#7ed6df',
-        'Wellington': '#4ecdc4',
-        'Tasman': '#95afc0',
-        'Nelson': '#c7ecee',
-        'Marlborough': '#dfe6e9',
-        'West Coast': '#a29bfe',
-        'Canterbury': '#74b9ff',
-        'Otago': '#81ecec',
-        'Southland': '#55a8fd'
+        'Northland': '#d69e2e',
+        'Auckland': '#c53030',
+        'Hauraki Gulf': '#0987a0',
+        'Waikato': '#38a169',
+        'Bay of Plenty': '#dd6b20',
+        'Gisborne': '#805ad5',
+        'Hawkes Bay': '#c05621',
+        'Taranaki': '#e53e3e',
+        'Manawatu-Whanganui': '#319795',
+        'Wellington': '#2c7a7b',
+        'Tasman': '#4a5568',
+        'Nelson': '#3182ce',
+        'Marlborough': '#5a67d8',
+        'West Coast': '#6b46c1',
+        'Canterbury': '#2b6cb0',
+        'Otago': '#00a3c4',
+        'Southland': '#3182ce'
     },
 
     // Simplified district boundaries (approximate polygons)
@@ -65,16 +65,21 @@ const MapManager = {
     ],
 
     init() {
-        // Initialize map centered on NZ
+        // Initialize map centered on NZ, constrained to NZ bounds
         this.map = L.map('map', {
             center: [-41.5, 174.0],
             zoom: 6,
             minZoom: 5,
-            maxZoom: 15
+            maxZoom: 15,
+            maxBounds: [
+                [-48.5, 164.0], // SW corner (with padding)
+                [-33.0, 180.0]  // NE corner (with padding)
+            ],
+            maxBoundsViscosity: 1.0 // Prevent dragging outside bounds completely
         });
 
-        // Add dark-themed tile layer
-        this.baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        // Add light-themed tile layer for better visibility
+        this.baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 19
@@ -102,13 +107,13 @@ const MapManager = {
 
     addDistrictOverlays() {
         Object.entries(this.districtBoundaries).forEach(([name, coords]) => {
-            const color = this.districtColors[name] || '#888';
+            const color = this.districtColors[name] || '#4a5568';
             const polygon = L.polygon(coords, {
                 fillColor: color,
-                fillOpacity: 0.12,
+                fillOpacity: 0.15,
                 color: color,
-                weight: 1,
-                opacity: 0.3
+                weight: 2,
+                opacity: 0.5
             });
             polygon.bindTooltip(name, {
                 permanent: false,
@@ -143,12 +148,12 @@ const MapManager = {
 
         cities.forEach(city => {
             const marker = L.circleMarker([city.lat, city.lng], {
-                radius: 4,
-                fillColor: '#4ecdc4',
-                color: '#4ecdc4',
-                weight: 1,
-                opacity: 0.8,
-                fillOpacity: 0.6
+                radius: 6,
+                fillColor: '#2c7a7b',
+                color: '#234e52',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
             });
             marker.bindTooltip(city.name, {
                 permanent: false,
@@ -172,19 +177,19 @@ const MapManager = {
             // Size based on magnitude
             const radius = Math.max(5, (magnitude || 1) * 4);
 
-            // Color based on depth
-            let color = '#ff6b6b';
-            if (depth > 100) color = '#9b59b6';
-            else if (depth > 50) color = '#e74c3c';
-            else if (depth > 20) color = '#ff6b6b';
+            // Color based on depth - more vibrant for light background
+            let color = '#e53e3e';
+            if (depth > 100) color = '#805ad5';
+            else if (depth > 50) color = '#c53030';
+            else if (depth > 20) color = '#e53e3e';
 
             const marker = L.circleMarker([coords[1], coords[0]], {
                 radius: radius,
                 fillColor: color,
-                color: '#fff',
-                weight: 1,
-                opacity: 0.9,
-                fillOpacity: 0.7
+                color: '#1a202c',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.85
             });
 
             const magDisplay = typeof magnitude === 'number' ? magnitude.toFixed(1) : '?';
@@ -227,11 +232,11 @@ const MapManager = {
             if (location) {
                 const level = volcano.level || 0;
 
-                // Color based on alert level
-                let color = '#6bcf63'; // Level 0
-                if (level >= 3) color = '#ff6b6b';
-                else if (level >= 2) color = '#ff9f43';
-                else if (level >= 1) color = '#ffd93d';
+                // Color based on alert level - more vibrant for light background
+                let color = '#38a169'; // Level 0 - green
+                if (level >= 3) color = '#e53e3e'; // red
+                else if (level >= 2) color = '#dd6b20'; // orange
+                else if (level >= 1) color = '#d69e2e'; // yellow
 
                 const marker = L.marker([location.lat, location.lng], {
                     icon: L.divIcon({
@@ -346,17 +351,17 @@ const MapManager = {
             // Create markers for each matched region
             matchedRegions.forEach(({ region, coords }) => {
                 const severity = warning.severity || 'low';
-                let color = '#ffd93d'; // default yellow
-                if (severity === 'high') color = '#ff6b6b';
-                else if (severity === 'medium') color = '#ff9f43';
+                let color = '#d69e2e'; // default yellow
+                if (severity === 'high') color = '#e53e3e';
+                else if (severity === 'medium') color = '#dd6b20';
 
                 const marker = L.circleMarker([coords.lat, coords.lng], {
-                    radius: 15,
+                    radius: 16,
                     fillColor: color,
-                    color: '#fff',
+                    color: '#1a202c',
                     weight: 2,
-                    opacity: 0.9,
-                    fillOpacity: 0.6
+                    opacity: 1,
+                    fillOpacity: 0.8
                 });
 
                 const title = warning.title || 'Weather Warning';
@@ -394,34 +399,34 @@ const MapManager = {
             // Skip if no location found
             if (matchedRegions.length === 0) return;
 
-            // Determine incident type and color
-            let color = '#ff9f43'; // default orange
+            // Determine incident type and color - vibrant for light background
+            let color = '#dd6b20'; // default orange
             let icon = '📰';
             if (text.includes('landslide') || text.includes('slip') || text.includes('landslip')) {
-                color = '#9b59b6'; // purple for landslides
+                color = '#805ad5'; // purple for landslides
                 icon = '⛰️';
             } else if (text.includes('crash') || text.includes('accident') || text.includes('fatal')) {
-                color = '#e74c3c'; // red for crashes
+                color = '#c53030'; // red for crashes
                 icon = '🚗';
             } else if (text.includes('fire')) {
-                color = '#ff6b6b'; // red-orange for fire
+                color = '#e53e3e'; // red for fire
                 icon = '🔥';
             } else if (text.includes('flood') || text.includes('swept')) {
-                color = '#3498db'; // blue for water-related
+                color = '#2b6cb0'; // blue for water-related
                 icon = '🌊';
             } else if (text.includes('search') || text.includes('rescue') || text.includes('missing')) {
-                color = '#f39c12'; // yellow-orange for search/rescue
+                color = '#b7791f'; // amber for search/rescue
                 icon = '🔍';
             }
 
             matchedRegions.forEach(({ region, coords }) => {
                 const marker = L.circleMarker([coords.lat, coords.lng], {
-                    radius: 12,
+                    radius: 13,
                     fillColor: color,
-                    color: '#fff',
+                    color: '#1a202c',
                     weight: 2,
-                    opacity: 0.9,
-                    fillOpacity: 0.7
+                    opacity: 1,
+                    fillOpacity: 0.85
                 });
 
                 marker.bindPopup(`
@@ -458,40 +463,40 @@ const MapManager = {
             // Skip if no location found
             if (matchedRegions.length === 0) return;
 
-            // Determine crime type and icon
-            let color = '#e74c3c'; // default red
+            // Determine crime type and icon - vibrant for light background
+            let color = '#c53030'; // default red
             let icon = '🚨';
             if (text.includes('protest') || text.includes('demonstration') || text.includes('rally')) {
-                color = '#f39c12'; // orange for protests
+                color = '#b7791f'; // amber for protests
                 icon = '✊';
             } else if (text.includes('robbery') || text.includes('burglary') || text.includes('theft') || text.includes('stolen')) {
-                color = '#c0392b'; // dark red
+                color = '#9b2c2c'; // dark red
                 icon = '💰';
             } else if (text.includes('assault') || text.includes('attack') || text.includes('violent')) {
-                color = '#8e44ad'; // purple
+                color = '#6b46c1'; // purple
                 icon = '⚠️';
             } else if (text.includes('homicide') || text.includes('murder') || text.includes('death') || text.includes('killed')) {
-                color = '#2c3e50'; // dark
+                color = '#1a202c'; // dark
                 icon = '💀';
             } else if (text.includes('drugs') || text.includes('meth') || text.includes('cannabis')) {
-                color = '#27ae60'; // green
+                color = '#276749'; // green
                 icon = '💊';
             } else if (text.includes('fraud') || text.includes('scam')) {
-                color = '#3498db'; // blue
+                color = '#2b6cb0'; // blue
                 icon = '🎭';
             } else if (text.includes('arrest') || text.includes('charged') || text.includes('court')) {
-                color = '#34495e'; // grey-blue
+                color = '#4a5568'; // grey-blue
                 icon = '👮';
             }
 
             matchedRegions.forEach(({ region, coords }) => {
                 const marker = L.circleMarker([coords.lat, coords.lng], {
-                    radius: 10,
+                    radius: 11,
                     fillColor: color,
-                    color: '#fff',
+                    color: '#1a202c',
                     weight: 2,
-                    opacity: 0.9,
-                    fillOpacity: 0.7
+                    opacity: 1,
+                    fillOpacity: 0.85
                 });
 
                 marker.bindPopup(`
@@ -571,17 +576,17 @@ const MapManager = {
             const magnitude = props.magnitude ?? 0;
             const depth = coords[2] ?? 0;
             const radius = Math.max(8, (magnitude || 1) * 5);
-            let color = '#ff6b6b';
-            if (depth > 100) color = '#9b59b6';
-            else if (depth > 50) color = '#e74c3c';
+            let color = '#e53e3e';
+            if (depth > 100) color = '#805ad5';
+            else if (depth > 50) color = '#c53030';
 
             marker = L.circleMarker([coords[1], coords[0]], {
                 radius: radius,
                 fillColor: color,
-                color: '#fff',
-                weight: 2,
+                color: '#1a202c',
+                weight: 3,
                 opacity: 1,
-                fillOpacity: 0.8
+                fillOpacity: 0.9
             });
 
             const magDisplay = typeof magnitude === 'number' ? magnitude.toFixed(1) : '?';
@@ -604,17 +609,17 @@ const MapManager = {
             });
 
             const severity = data.severity || 'low';
-            let color = '#ffd93d';
-            if (severity === 'high') color = '#ff6b6b';
-            else if (severity === 'medium') color = '#ff9f43';
+            let color = '#d69e2e';
+            if (severity === 'high') color = '#e53e3e';
+            else if (severity === 'medium') color = '#dd6b20';
 
             marker = L.circleMarker([coords.lat, coords.lng], {
                 radius: 18,
                 fillColor: color,
-                color: '#fff',
-                weight: 2,
+                color: '#1a202c',
+                weight: 3,
                 opacity: 1,
-                fillOpacity: 0.7
+                fillOpacity: 0.85
             });
 
             marker.bindPopup(`
@@ -634,14 +639,14 @@ const MapManager = {
 
             if (!coords) return;
 
-            const color = type === 'crime' ? '#e74c3c' : '#9b59b6';
+            const color = type === 'crime' ? '#c53030' : '#805ad5';
             marker = L.circleMarker([coords.lat, coords.lng], {
-                radius: 14,
+                radius: 15,
                 fillColor: color,
-                color: '#fff',
-                weight: 2,
+                color: '#1a202c',
+                weight: 3,
                 opacity: 1,
-                fillOpacity: 0.7
+                fillOpacity: 0.85
             });
 
             marker.bindPopup(`
