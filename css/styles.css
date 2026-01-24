@@ -381,13 +381,15 @@ main {
 
 .weather-card .description {
     flex: 1;
+    color: #3d4550;
+    font-size: 0.8rem;
 }
 
 .weather-card .conditions {
     display: flex;
     gap: 0.6rem;
     font-size: 0.75rem;
-    color: #57606a;
+    color: #3d4550;
 }
 
 .weather-card .condition {
