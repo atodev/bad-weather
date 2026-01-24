@@ -5,8 +5,7 @@ const App = {
         volcanoes: 300000,     // 5 minutes
         weather: 300000,       // 5 minutes
         warnings: 300000,      // 5 minutes
-        incidents: 300000,     // 5 minutes
-        crime: 300000          // 5 minutes
+        incidents: 300000      // 5 minutes
     },
 
     timers: {},
@@ -54,8 +53,7 @@ const App = {
             'weather-panel': 'weather',
             'earthquake-panel': 'earthquakes',
             'volcano-panel': 'volcanoes',
-            'incidents-panel': 'incidents',
-            'crime-panel': 'crime'
+            'incidents-panel': 'incidents'
         };
 
         Object.entries(panelLayerMap).forEach(([panelId, layerName]) => {
@@ -120,8 +118,7 @@ const App = {
             this.loadEarthquakes(),
             this.loadVolcanoes(),
             this.loadWeather(),
-            this.loadIncidents(),
-            this.loadCrime()
+            this.loadIncidents()
         ]);
     },
 
@@ -242,32 +239,6 @@ const App = {
         }
     },
 
-    // Load crime and civil unrest data
-    async loadCrime() {
-        try {
-            const allCrimeItems = await Feeds.getAllCrimeItems();
-
-            // Filter to only show crime from the last 24 hours
-            const crimeItems = Array.isArray(allCrimeItems)
-                ? allCrimeItems.filter(c => this.isWithin24Hours(c.pubDate))
-                : [];
-
-            Feeds.renderCrime(crimeItems, 'crime-content');
-            // Add crime to map
-            if (crimeItems.length > 0) {
-                MapManager.addCrime(crimeItems);
-                // Track most recent crime item
-                const latest = crimeItems[0];
-                const time = new Date(latest.pubDate || 0);
-                this.updateMostRecent({ type: 'crime', data: latest, time });
-            }
-        } catch (error) {
-            console.error('Error loading crime data:', error);
-            document.getElementById('crime-content').innerHTML =
-                '<div class="error">Failed to load crime data</div>';
-        }
-    },
-
     // Set up auto-refresh timers
     setupAutoRefresh() {
         // Wrapper to refresh data and update display
@@ -301,11 +272,6 @@ const App = {
         this.timers.incidents = setInterval(
             () => refreshAndUpdate(this.loadIncidents),
             this.refreshIntervals.incidents
-        );
-
-        this.timers.crime = setInterval(
-            () => refreshAndUpdate(this.loadCrime),
-            this.refreshIntervals.crime
         );
 
         console.log('Auto-refresh set up: every 5 minutes');
