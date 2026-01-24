@@ -111,8 +111,8 @@ const MapManager = {
                 fillColor: color,
                 fillOpacity: 0.15,
                 color: color,
-                weight: 0.5,
-                opacity: 0.4
+                weight: 0,
+                opacity: 0
             });
             polygon.bindTooltip(name, {
                 permanent: false,
