@@ -7,7 +7,7 @@ const MapManager = {
         weather: null,
         warnings: null,
         incidents: null,
-        crime: null,
+        fire: null,
         mostRecent: null,
         districts: null
     },
@@ -91,7 +91,7 @@ const MapManager = {
         this.layers.weather = L.layerGroup();
         this.layers.warnings = L.layerGroup();
         this.layers.incidents = L.layerGroup();
-        this.layers.crime = L.layerGroup();
+        this.layers.fire = L.layerGroup();
         this.layers.mostRecent = L.layerGroup();
         this.layers.districts = L.layerGroup();
 
@@ -442,13 +442,13 @@ const MapManager = {
         });
     },
 
-    // Add crime/civil unrest markers
-    addCrime(crimeItems) {
-        this.layers.crime.clearLayers();
+    // Add fire incident markers
+    addFire(fireItems) {
+        this.layers.fire.clearLayers();
 
-        if (!crimeItems || !Array.isArray(crimeItems)) return;
+        if (!fireItems || !Array.isArray(fireItems)) return;
 
-        crimeItems.forEach(item => {
+        fireItems.forEach(item => {
             const text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
 
             // Find matching regions
@@ -462,35 +462,23 @@ const MapManager = {
             // Skip if no location found
             if (matchedRegions.length === 0) return;
 
-            // Determine crime type and icon - vibrant for light background
-            let color = '#c53030'; // default red
-            let icon = '🚨';
-            if (text.includes('protest') || text.includes('demonstration') || text.includes('rally')) {
-                color = '#b7791f'; // amber for protests
-                icon = '✊';
-            } else if (text.includes('robbery') || text.includes('burglary') || text.includes('theft') || text.includes('stolen')) {
-                color = '#9b2c2c'; // dark red
-                icon = '💰';
-            } else if (text.includes('assault') || text.includes('attack') || text.includes('violent')) {
-                color = '#6b46c1'; // purple
-                icon = '⚠️';
-            } else if (text.includes('homicide') || text.includes('murder') || text.includes('death') || text.includes('killed')) {
-                color = '#1a202c'; // dark
-                icon = '💀';
-            } else if (text.includes('drugs') || text.includes('meth') || text.includes('cannabis')) {
-                color = '#276749'; // green
-                icon = '💊';
-            } else if (text.includes('fraud') || text.includes('scam')) {
-                color = '#2b6cb0'; // blue
-                icon = '🎭';
-            } else if (text.includes('arrest') || text.includes('charged') || text.includes('court')) {
-                color = '#4a5568'; // grey-blue
-                icon = '👮';
+            // Determine fire type
+            let color = '#e53e3e'; // red for fire
+            let icon = '🔥';
+            if (text.includes('wildfire') || text.includes('bush fire') || text.includes('bushfire') || text.includes('scrub fire')) {
+                color = '#c53030'; // darker red for wildfires
+                icon = '🌲🔥';
+            } else if (text.includes('house fire') || text.includes('building fire') || text.includes('structure fire')) {
+                color = '#dd6b20'; // orange for structure fires
+                icon = '🏠🔥';
+            } else if (text.includes('car fire') || text.includes('vehicle fire')) {
+                color = '#b7791f'; // amber for vehicle fires
+                icon = '🚗🔥';
             }
 
             matchedRegions.forEach(({ region, coords }) => {
                 const marker = L.circleMarker([coords.lat, coords.lng], {
-                    radius: 11,
+                    radius: 14,
                     fillColor: color,
                     color: '#1a202c',
                     weight: 0.5,
@@ -499,15 +487,15 @@ const MapManager = {
                 });
 
                 marker.bindPopup(`
-                    <div class="popup-title">${icon} ${item.title || 'Crime Report'}</div>
+                    <div class="popup-title">${icon} ${item.title || 'Fire Incident'}</div>
                     <div class="popup-meta">
                         <div>${item.description ? item.description.substring(0, 150) + '...' : ''}</div>
-                        <div>Source: ${item.source || 'Police'}</div>
+                        <div>Source: ${item.source || 'News'}</div>
                         <div>Area: ${region}</div>
                     </div>
                 `);
 
-                this.layers.crime.addLayer(marker);
+                this.layers.fire.addLayer(marker);
             });
         });
     },

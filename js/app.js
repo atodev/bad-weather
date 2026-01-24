@@ -5,7 +5,8 @@ const App = {
         volcanoes: 300000,     // 5 minutes
         weather: 300000,       // 5 minutes
         warnings: 300000,      // 5 minutes
-        incidents: 300000      // 5 minutes
+        incidents: 300000,     // 5 minutes
+        fire: 300000           // 5 minutes
     },
 
     timers: {},
@@ -53,7 +54,8 @@ const App = {
             'weather-panel': 'weather',
             'earthquake-panel': 'earthquakes',
             'volcano-panel': 'volcanoes',
-            'incidents-panel': 'incidents'
+            'incidents-panel': 'incidents',
+            'fire-panel': 'fire'
         };
 
         Object.entries(panelLayerMap).forEach(([panelId, layerName]) => {
@@ -118,7 +120,8 @@ const App = {
             this.loadEarthquakes(),
             this.loadVolcanoes(),
             this.loadWeather(),
-            this.loadIncidents()
+            this.loadIncidents(),
+            this.loadFire()
         ]);
     },
 
@@ -239,6 +242,32 @@ const App = {
         }
     },
 
+    // Load fire incidents
+    async loadFire() {
+        try {
+            const allFire = await Feeds.getAllFireItems();
+
+            // Filter to only show fire incidents from the last 24 hours
+            const fireItems = Array.isArray(allFire)
+                ? allFire.filter(f => this.isWithin24Hours(f.pubDate))
+                : [];
+
+            Feeds.renderFire(fireItems, 'fire-content');
+            // Add fire to map
+            if (fireItems.length > 0) {
+                MapManager.addFire(fireItems);
+                // Track most recent fire
+                const latest = fireItems[0];
+                const time = new Date(latest.pubDate || 0);
+                this.updateMostRecent({ type: 'fire', data: latest, time });
+            }
+        } catch (error) {
+            console.error('Error loading fire data:', error);
+            document.getElementById('fire-content').innerHTML =
+                '<div class="error">Failed to load fire data</div>';
+        }
+    },
+
     // Set up auto-refresh timers
     setupAutoRefresh() {
         // Wrapper to refresh data and update display
@@ -272,6 +301,11 @@ const App = {
         this.timers.incidents = setInterval(
             () => refreshAndUpdate(this.loadIncidents),
             this.refreshIntervals.incidents
+        );
+
+        this.timers.fire = setInterval(
+            () => refreshAndUpdate(this.loadFire),
+            this.refreshIntervals.fire
         );
 
         console.log('Auto-refresh set up: every 5 minutes');

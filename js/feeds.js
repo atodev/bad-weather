@@ -782,6 +782,166 @@ const Feeds = {
         }
     },
 
+    // Filter for fire-related content (NZ only)
+    filterFire(items) {
+        const keywords = [
+            'fire', 'fires', 'blaze', 'blazing', 'burning', 'burnt', 'burned',
+            'wildfire', 'wildfires', 'bushfire', 'bush fire', 'scrub fire',
+            'house fire', 'building fire', 'structure fire', 'factory fire',
+            'car fire', 'vehicle fire', 'truck fire',
+            'forest fire', 'grass fire', 'vegetation fire',
+            'flames', 'inferno', 'engulfed', 'gutted',
+            'fire crews', 'firefighters', 'fire brigade', 'fire service',
+            'fire emergency', 'fenz', 'fire and emergency',
+            'smoke', 'evacuation', 'evacuated',
+            'arson', 'deliberately lit', 'suspicious fire'
+        ];
+
+        return items.filter(item => {
+            const text = (item.title + ' ' + item.description).toLowerCase();
+            const hasKeyword = keywords.some(keyword => text.includes(keyword));
+            const isNZ = this.isNZRelated(item);
+            const excluded = this.shouldExclude(text);
+            return hasKeyword && isNZ && !excluded;
+        });
+    },
+
+    // Fetch all fire incidents
+    async getAllFireItems() {
+        const allFire = [];
+
+        // Try RNZ and filter for fire (primary source - more reliable)
+        const rnzItems = await this.fetchFeed(this.sources.rnz);
+        const filteredRnz = this.filterFire(rnzItems);
+        filteredRnz.forEach(item => {
+            item.source = 'RNZ';
+            item.sourceIcon = '📻';
+        });
+        allFire.push(...filteredRnz);
+
+        // Try Stuff and filter for fire
+        const stuffItems = await this.fetchFeed(this.sources.stuff);
+        const filteredStuff = this.filterFire(stuffItems);
+        filteredStuff.forEach(item => {
+            item.source = 'Stuff';
+            item.sourceIcon = '📰';
+        });
+        allFire.push(...filteredStuff);
+
+        // Try Scoop for fire
+        const scoopItems = await this.fetchFeed(this.sources.scoop);
+        const filteredScoop = this.filterFire(scoopItems);
+        filteredScoop.forEach(item => {
+            item.source = 'Scoop';
+            item.sourceIcon = '📰';
+        });
+        allFire.push(...filteredScoop);
+
+        // If we got nothing, return direct links
+        if (allFire.length === 0) {
+            return this.getFireDirectLinks();
+        }
+
+        // Sort by date (newest first)
+        allFire.sort((a, b) => {
+            const dateA = new Date(a.pubDate);
+            const dateB = new Date(b.pubDate);
+            return dateB - dateA;
+        });
+
+        return allFire.slice(0, 20);
+    },
+
+    // Direct links for fire data
+    getFireDirectLinks() {
+        return [
+            {
+                title: 'Fire and Emergency NZ Incidents',
+                link: 'https://www.fireandemergency.nz/incidents-and-news/incident-reports/',
+                description: 'Current fire incidents and emergency callouts across New Zealand',
+                pubDate: new Date().toISOString(),
+                source: 'Direct Link',
+                sourceIcon: '🚒'
+            },
+            {
+                title: 'FENZ News & Updates',
+                link: 'https://www.fireandemergency.nz/incidents-and-news/',
+                description: 'Latest news from Fire and Emergency New Zealand',
+                pubDate: new Date().toISOString(),
+                source: 'Direct Link',
+                sourceIcon: '🔥'
+            },
+            {
+                title: 'Stuff Fire News',
+                link: 'https://www.stuff.co.nz/national',
+                description: 'Fire news from across New Zealand',
+                pubDate: new Date().toISOString(),
+                source: 'Direct Link',
+                sourceIcon: '📰'
+            }
+        ];
+    },
+
+    // Render fire items to sidebar
+    renderFire(fireItems, containerId) {
+        const container = document.getElementById(containerId);
+        const countEl = document.getElementById('fire-count');
+
+        if (!fireItems || fireItems.length === 0) {
+            container.innerHTML = `
+                <div class="error">
+                    Unable to load fire data.<br>
+                    <small style="color: #666">RSS feeds may be blocked.</small>
+                </div>
+            `;
+            if (countEl) countEl.textContent = '0';
+            return;
+        }
+
+        const isDirectLinks = fireItems[0]?.source === 'Direct Link';
+        if (countEl) countEl.textContent = isDirectLinks ? '?' : fireItems.length;
+
+        container.innerHTML = fireItems.map(item => {
+            const readableDate = this.formatDateReadable(item.pubDate);
+            const text = ((item.title || '') + ' ' + (item.description || '')).toLowerCase();
+
+            // Determine icon based on fire type
+            let icon = '🔥';
+            if (text.includes('wildfire') || text.includes('bush fire') || text.includes('bushfire') || text.includes('scrub fire') || text.includes('forest fire')) {
+                icon = '🌲🔥';
+            } else if (text.includes('house fire') || text.includes('building fire') || text.includes('structure fire')) {
+                icon = '🏠🔥';
+            } else if (text.includes('car fire') || text.includes('vehicle fire')) {
+                icon = '🚗🔥';
+            }
+
+            // Clean up description
+            let description = this.stripHtml(item.description);
+            if (description.length > 150) {
+                description = description.substring(0, 150).trim() + '...';
+            }
+
+            const title = (item.title || 'No title').replace(/\s+/g, ' ').trim();
+
+            return `
+                <div class="incident-item" onclick="window.open('${item.link}', '_blank')">
+                    <div class="title">${icon} ${title}</div>
+                    ${!isDirectLinks && readableDate ? `<div class="time" style="color: #888; font-size: 0.75rem;">${readableDate}</div>` : ''}
+                    ${description ? `<div class="description" style="color: #aaa; font-size: 0.85rem; line-height: 1.4; margin-top: 0.25rem;">${description}</div>` : ''}
+                    <div class="source" style="color: #666; font-size: 0.7rem; margin-top: 0.5rem;">${item.source}</div>
+                </div>
+            `;
+        }).join('');
+
+        if (isDirectLinks) {
+            container.innerHTML = `
+                <div style="padding: 0.5rem; color: #888; font-size: 0.8rem; text-align: center;">
+                    RSS feeds blocked - click links below to view live data
+                </div>
+            ` + container.innerHTML;
+        }
+    },
+
     // Format time relative
     formatTime(dateStr) {
         if (!dateStr) return '';
