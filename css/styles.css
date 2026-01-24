@@ -353,40 +353,47 @@ main {
     line-height: 1.4;
 }
 
-/* Weather Card */
+/* Weather Card - compact for 17 regions */
 .weather-card {
     background: linear-gradient(135deg, #e8f4fc 0%, #ffffff 100%);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.4rem;
     border: 1px solid #d0d7de;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
 }
 
-.weather-card .city {
-    font-size: 1rem;
+.weather-card .region {
+    font-size: 0.8rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
     color: #24292f;
+    min-width: 100px;
 }
 
 .weather-card .temp {
-    font-size: 2rem;
-    font-weight: 300;
+    font-size: 1.2rem;
+    font-weight: 500;
     color: #0969da;
+    min-width: 50px;
+}
+
+.weather-card .description {
+    flex: 1;
 }
 
 .weather-card .conditions {
     display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
+    gap: 0.6rem;
+    font-size: 0.75rem;
     color: #57606a;
 }
 
 .weather-card .condition {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.2rem;
 }
 
 /* Volcano Card */

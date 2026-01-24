@@ -109,7 +109,7 @@ const MapManager = {
             const color = this.districtColors[name] || '#4a5568';
             const polygon = L.polygon(coords, {
                 fillColor: color,
-                fillOpacity: 0.15,
+                fillOpacity: 0.35,
                 color: color,
                 weight: 0,
                 opacity: 0

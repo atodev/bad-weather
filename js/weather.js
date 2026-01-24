@@ -2,12 +2,25 @@
 const Weather = {
     baseUrl: 'https://api.open-meteo.com/v1',
 
-    // NZ major cities
-    cities: [
-        { name: 'Auckland', lat: -36.85, lng: 174.76 },
-        { name: 'Wellington', lat: -41.29, lng: 174.78 },
-        { name: 'Christchurch', lat: -43.53, lng: 172.64 },
-        { name: 'Queenstown', lat: -45.03, lng: 168.66 }
+    // NZ regions (based on district boundaries)
+    regions: [
+        { name: 'Northland', lat: -35.3, lng: 173.8 },
+        { name: 'Auckland', lat: -36.8, lng: 174.6 },
+        { name: 'Hauraki Gulf', lat: -36.6, lng: 175.4 },
+        { name: 'Waikato', lat: -38.0, lng: 175.3 },
+        { name: 'Bay of Plenty', lat: -37.85, lng: 177.2 },
+        { name: 'Gisborne', lat: -38.15, lng: 177.9 },
+        { name: 'Hawkes Bay', lat: -39.4, lng: 177.0 },
+        { name: 'Taranaki', lat: -39.2, lng: 174.1 },
+        { name: 'Manawatu-Whanganui', lat: -39.7, lng: 175.6 },
+        { name: 'Wellington', lat: -41.05, lng: 175.3 },
+        { name: 'Tasman', lat: -41.3, lng: 172.5 },
+        { name: 'Nelson', lat: -41.2, lng: 173.3 },
+        { name: 'Marlborough', lat: -41.7, lng: 173.9 },
+        { name: 'West Coast', lat: -42.9, lng: 170.6 },
+        { name: 'Canterbury', lat: -43.5, lng: 171.9 },
+        { name: 'Otago', lat: -45.5, lng: 169.6 },
+        { name: 'Southland', lat: -46.3, lng: 167.5 }
     ],
 
     // Weather code descriptions
@@ -40,23 +53,23 @@ const Weather = {
         99: 'Thunderstorm + heavy hail'
     },
 
-    // Fetch weather for all cities
+    // Fetch weather for all regions
     async getAllCityWeather() {
         const weatherData = [];
 
-        for (const city of this.cities) {
+        for (const region of this.regions) {
             try {
-                const data = await this.getWeather(city.lat, city.lng);
+                const data = await this.getWeather(region.lat, region.lng);
                 if (data) {
                     weatherData.push({
-                        city: city.name,
-                        lat: city.lat,
-                        lng: city.lng,
+                        region: region.name,
+                        lat: region.lat,
+                        lng: region.lng,
                         ...data
                     });
                 }
             } catch (error) {
-                console.error(`Error fetching weather for ${city.name}:`, error);
+                console.error(`Error fetching weather for ${region.name}:`, error);
             }
         }
 
@@ -118,27 +131,16 @@ const Weather = {
             const extremeClass = isExtreme ? 'severity-high' : '';
 
             return `
-                <div class="weather-card ${extremeClass}" onclick="MapManager.panTo(${data.lat}, ${data.lng}, 10)">
-                    <div class="city">${data.city}</div>
+                <div class="weather-card ${extremeClass}" onclick="MapManager.panTo(${data.lat}, ${data.lng}, 9)">
+                    <div class="region">${data.region}</div>
                     <div class="temp">${temp}°C</div>
-                    <div class="description" style="color: #aaa; font-size: 0.9rem;">${weatherDesc}</div>
+                    <div class="description">${this.getWeatherIcon(weatherCode)} ${weatherDesc}</div>
                     <div class="conditions">
-                        <div class="condition">
-                            <span>💨</span>
-                            <span>${windSpeed} km/h${windGusts > windSpeed + 10 ? ` (gusts ${windGusts})` : ''}</span>
-                        </div>
-                        <div class="condition">
-                            <span>💧</span>
-                            <span>${humidity}%</span>
-                        </div>
-                        ${precipitation > 0 ? `
-                        <div class="condition">
-                            <span>🌧️</span>
-                            <span>${precipitation}mm</span>
-                        </div>
-                        ` : ''}
+                        <span>💨${windSpeed}</span>
+                        <span>💧${humidity}%</span>
+                        ${precipitation > 0 ? `<span>🌧️${precipitation}mm</span>` : ''}
+                        ${isExtreme ? '<span style="color: #e53e3e;">⚠️</span>' : ''}
                     </div>
-                    ${isExtreme ? '<div style="color: #ff6b6b; font-size: 0.75rem; margin-top: 0.5rem;">⚠️ Extreme conditions</div>' : ''}
                 </div>
             `;
         }).join('');
