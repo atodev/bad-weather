@@ -8,6 +8,7 @@ const MapManager = {
         warnings: null,
         incidents: null,
         fire: null,
+        roads: null,
         mostRecent: null,
         districts: null
     },
@@ -92,6 +93,7 @@ const MapManager = {
         this.layers.warnings = L.layerGroup();
         this.layers.incidents = L.layerGroup();
         this.layers.fire = L.layerGroup();
+        this.layers.roads = L.layerGroup();
         this.layers.mostRecent = L.layerGroup();
         this.layers.districts = L.layerGroup();
 
@@ -497,6 +499,71 @@ const MapManager = {
 
                 this.layers.fire.addLayer(marker);
             });
+        });
+    },
+
+    // Add road event markers
+    addRoads(roadEvents) {
+        this.layers.roads.clearLayers();
+
+        if (!roadEvents || !Array.isArray(roadEvents)) return;
+
+        roadEvents.forEach(event => {
+            // Get coordinates from the event geometry
+            const coords = event.geometry?.coordinates;
+            if (!coords || coords.length < 2) return;
+
+            const lng = coords[0];
+            const lat = coords[1];
+            const props = event.properties || {};
+
+            // Determine marker style based on event type/impact
+            let color = '#2d3748'; // default dark gray
+            let icon = '🚧';
+            const eventType = (props.eventType || '').toLowerCase();
+            const impact = (props.impact || '').toLowerCase();
+
+            if (eventType.includes('closure') || impact.includes('closed')) {
+                color = '#c53030'; // red for closures
+                icon = '⛔';
+            } else if (impact.includes('delays') || impact.includes('delay')) {
+                color = '#dd6b20'; // orange for delays
+                icon = '⚠️';
+            } else if (eventType.includes('roadworks') || eventType.includes('road works')) {
+                color = '#d69e2e'; // yellow for roadworks
+                icon = '🚧';
+            } else if (eventType.includes('weather') || eventType.includes('flooding')) {
+                color = '#3182ce'; // blue for weather
+                icon = '🌧️';
+            }
+
+            const marker = L.circleMarker([lat, lng], {
+                radius: 10,
+                fillColor: color,
+                color: '#1a202c',
+                weight: 1,
+                opacity: 0.8,
+                fillOpacity: 0.85
+            });
+
+            // Build popup content
+            const desc = props.eventDescription || 'Road event';
+            const restrictions = props.restrictions || '';
+            const location = props.locationArea || '';
+            const status = props.status || '';
+
+            marker.bindPopup(`
+                <div class="popup-title">${icon} ${eventType || 'Road Event'}</div>
+                <div class="popup-meta">
+                    <div><strong>${desc}</strong></div>
+                    ${restrictions ? `<div>Restrictions: ${restrictions}</div>` : ''}
+                    ${location ? `<div>Location: ${location}</div>` : ''}
+                    ${impact ? `<div>Impact: ${impact}</div>` : ''}
+                    ${status ? `<div>Status: ${status}</div>` : ''}
+                </div>
+            `);
+
+            this.layers.roads.addLayer(marker);
         });
     },
 

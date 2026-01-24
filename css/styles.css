@@ -143,6 +143,10 @@ main {
     background: #e53e3e;
 }
 
+.legend-marker.road {
+    background: #2d3748;
+}
+
 /* District legend - bottom right */
 #district-legend {
     position: absolute;

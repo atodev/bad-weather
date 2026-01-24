@@ -6,7 +6,8 @@ const App = {
         weather: 300000,       // 5 minutes
         warnings: 300000,      // 5 minutes
         incidents: 300000,     // 5 minutes
-        fire: 300000           // 5 minutes
+        fire: 300000,          // 5 minutes
+        roads: 300000          // 5 minutes
     },
 
     timers: {},
@@ -55,7 +56,8 @@ const App = {
             'earthquake-panel': 'earthquakes',
             'volcano-panel': 'volcanoes',
             'incidents-panel': 'incidents',
-            'fire-panel': 'fire'
+            'fire-panel': 'fire',
+            'roads-panel': 'roads'
         };
 
         Object.entries(panelLayerMap).forEach(([panelId, layerName]) => {
@@ -121,7 +123,8 @@ const App = {
             this.loadVolcanoes(),
             this.loadWeather(),
             this.loadIncidents(),
-            this.loadFire()
+            this.loadFire(),
+            this.loadRoads()
         ]);
     },
 
@@ -268,6 +271,22 @@ const App = {
         }
     },
 
+    // Load road events from NZTA
+    async loadRoads() {
+        try {
+            const roadEvents = await Feeds.getRoadEvents();
+            Feeds.renderRoadEvents(roadEvents, 'roads-content');
+            // Add roads to map
+            if (roadEvents.length > 0) {
+                MapManager.addRoads(roadEvents);
+            }
+        } catch (error) {
+            console.error('Error loading road events:', error);
+            document.getElementById('roads-content').innerHTML =
+                '<div class="error">Failed to load road events</div>';
+        }
+    },
+
     // Set up auto-refresh timers
     setupAutoRefresh() {
         // Wrapper to refresh data and update display
@@ -306,6 +325,11 @@ const App = {
         this.timers.fire = setInterval(
             () => refreshAndUpdate(this.loadFire),
             this.refreshIntervals.fire
+        );
+
+        this.timers.roads = setInterval(
+            () => refreshAndUpdate(this.loadRoads),
+            this.refreshIntervals.roads
         );
 
         console.log('Auto-refresh set up: every 5 minutes');

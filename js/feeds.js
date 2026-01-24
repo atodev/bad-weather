@@ -942,6 +942,90 @@ const Feeds = {
         }
     },
 
+    // NZTA Road Events API
+    nztaApiUrl: 'https://services.arcgis.com/CXBb7LAjgIIdcsPt/arcgis/rest/services/NZTA_Highway_Information/FeatureServer/0/query',
+
+    // Fetch road events from NZTA
+    async getRoadEvents() {
+        try {
+            const params = new URLSearchParams({
+                where: '1=1',
+                outFields: '*',
+                f: 'geojson',
+                resultRecordCount: 100
+            });
+
+            const response = await fetch(`${this.nztaApiUrl}?${params}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const data = await response.json();
+            return data.features || [];
+        } catch (error) {
+            console.error('Error fetching road events:', error);
+            return [];
+        }
+    },
+
+    // Render road events to sidebar
+    renderRoadEvents(roadEvents, containerId) {
+        const container = document.getElementById(containerId);
+        const countEl = document.getElementById('roads-count');
+
+        if (!roadEvents || roadEvents.length === 0) {
+            container.innerHTML = `
+                <div class="error">
+                    No active road events.<br>
+                    <small style="color: #666">Check <a href="https://www.journeys.nzta.govt.nz/traffic" target="_blank" style="color: #4a90d9;">NZTA Journey Planner</a></small>
+                </div>
+            `;
+            if (countEl) countEl.textContent = '0';
+            return;
+        }
+
+        if (countEl) countEl.textContent = roadEvents.length;
+
+        container.innerHTML = roadEvents.map(event => {
+            const props = event.properties || {};
+            const eventType = props.eventType || 'Road Event';
+            const desc = props.eventDescription || '';
+            const impact = props.impact || '';
+            const location = props.locationArea || '';
+            const status = props.status || '';
+
+            // Determine icon based on event type
+            let icon = '🚧';
+            const typeL = eventType.toLowerCase();
+            const impactL = impact.toLowerCase();
+
+            if (typeL.includes('closure') || impactL.includes('closed')) {
+                icon = '⛔';
+            } else if (impactL.includes('delays') || impactL.includes('delay')) {
+                icon = '⚠️';
+            } else if (typeL.includes('weather') || typeL.includes('flooding')) {
+                icon = '🌧️';
+            } else if (typeL.includes('crash') || typeL.includes('accident')) {
+                icon = '🚗';
+            }
+
+            // Severity class based on impact
+            let severityClass = '';
+            if (impactL.includes('closed') || impactL.includes('major')) {
+                severityClass = 'severity-high';
+            } else if (impactL.includes('delays')) {
+                severityClass = 'severity-medium';
+            }
+
+            return `
+                <div class="alert-item ${severityClass}">
+                    <div class="title">${icon} ${eventType}</div>
+                    <div class="description">${desc}</div>
+                    ${location ? `<div class="meta"><span>${location}</span></div>` : ''}
+                    ${impact ? `<div class="meta"><span style="color: ${impactL.includes('closed') ? '#cf222e' : '#bf8700'}">${impact}</span></div>` : ''}
+                </div>
+            `;
+        }).join('');
+    },
+
     // Format time relative
     formatTime(dateStr) {
         if (!dateStr) return '';
