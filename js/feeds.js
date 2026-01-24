@@ -945,11 +945,11 @@ const Feeds = {
     // NZTA Road Events API
     nztaApiUrl: 'https://services.arcgis.com/CXBb7LAjgIIdcsPt/arcgis/rest/services/NZTA_Highway_Information/FeatureServer/0/query',
 
-    // Fetch road events from NZTA
+    // Fetch road events from NZTA (unplanned only)
     async getRoadEvents() {
         try {
             const params = new URLSearchParams({
-                where: '1=1',
+                where: "planned = 'No'",
                 outFields: '*',
                 f: 'geojson',
                 resultRecordCount: 100
