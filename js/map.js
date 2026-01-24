@@ -78,11 +78,10 @@ const MapManager = {
             maxBoundsViscosity: 1.0 // Prevent dragging outside bounds completely
         });
 
-        // Add light-themed tile layer for better visibility
-        this.baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 19
+        // Add earth-tone tile layer (Stadia Outdoors)
+        this.baseTileLayer = L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 20
         });
         this.baseTileLayer.addTo(this.map);
 
@@ -112,8 +111,8 @@ const MapManager = {
                 fillColor: color,
                 fillOpacity: 0.15,
                 color: color,
-                weight: 2,
-                opacity: 0.5
+                weight: 0.5,
+                opacity: 0.4
             });
             polygon.bindTooltip(name, {
                 permanent: false,
@@ -151,8 +150,8 @@ const MapManager = {
                 radius: 6,
                 fillColor: '#2c7a7b',
                 color: '#234e52',
-                weight: 2,
-                opacity: 1,
+                weight: 0.5,
+                opacity: 0.4,
                 fillOpacity: 0.8
             });
             marker.bindTooltip(city.name, {
@@ -187,8 +186,8 @@ const MapManager = {
                 radius: radius,
                 fillColor: color,
                 color: '#1a202c',
-                weight: 2,
-                opacity: 1,
+                weight: 0.5,
+                opacity: 0.4,
                 fillOpacity: 0.85
             });
 
@@ -359,8 +358,8 @@ const MapManager = {
                     radius: 16,
                     fillColor: color,
                     color: '#1a202c',
-                    weight: 2,
-                    opacity: 1,
+                    weight: 0.5,
+                    opacity: 0.4,
                     fillOpacity: 0.8
                 });
 
@@ -424,8 +423,8 @@ const MapManager = {
                     radius: 13,
                     fillColor: color,
                     color: '#1a202c',
-                    weight: 2,
-                    opacity: 1,
+                    weight: 0.5,
+                    opacity: 0.4,
                     fillOpacity: 0.85
                 });
 
@@ -494,8 +493,8 @@ const MapManager = {
                     radius: 11,
                     fillColor: color,
                     color: '#1a202c',
-                    weight: 2,
-                    opacity: 1,
+                    weight: 0.5,
+                    opacity: 0.4,
                     fillOpacity: 0.85
                 });
 
@@ -584,8 +583,8 @@ const MapManager = {
                 radius: radius,
                 fillColor: color,
                 color: '#1a202c',
-                weight: 3,
-                opacity: 1,
+                weight: 0.5,
+                opacity: 0.4,
                 fillOpacity: 0.9
             });
 
@@ -617,8 +616,8 @@ const MapManager = {
                 radius: 18,
                 fillColor: color,
                 color: '#1a202c',
-                weight: 3,
-                opacity: 1,
+                weight: 0.5,
+                opacity: 0.4,
                 fillOpacity: 0.85
             });
 
@@ -644,8 +643,8 @@ const MapManager = {
                 radius: 15,
                 fillColor: color,
                 color: '#1a202c',
-                weight: 3,
-                opacity: 1,
+                weight: 0.5,
+                opacity: 0.4,
                 fillOpacity: 0.85
             });
 

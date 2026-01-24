@@ -81,7 +81,7 @@ main {
     width: 100%;
     height: 100%;
     min-height: 600px;
-    background: #5fb3a1;
+    background: #b8d4e3;
 }
 
 #map-legend {
@@ -116,36 +116,31 @@ main {
     width: 14px;
     height: 14px;
     border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .legend-marker.warning {
-    background: #ffd93d;
-    box-shadow: 0 0 6px #ffd93d;
+    background: #bf8700;
 }
 
 .legend-marker.earthquake {
-    background: #ff6b6b;
-    box-shadow: 0 0 6px #ff6b6b;
+    background: #cf222e;
 }
 
 .legend-marker.volcano {
-    background: #ffd93d;
-    box-shadow: 0 0 6px #ffd93d;
+    background: #bc4c00;
 }
 
 .legend-marker.weather {
-    background: #4ecdc4;
-    box-shadow: 0 0 6px #4ecdc4;
+    background: #0969da;
 }
 
 .legend-marker.incident {
-    background: #9b59b6;
-    box-shadow: 0 0 6px #9b59b6;
+    background: #8250df;
 }
 
 .legend-marker.crime {
-    background: #e74c3c;
-    box-shadow: 0 0 6px #e74c3c;
+    background: #cf222e;
 }
 
 /* District legend - bottom right */
@@ -469,7 +464,7 @@ main {
 
 /* Error state */
 .error {
-    color: #ff6b6b;
+    color: #cf222e;
     text-align: center;
     padding: 1rem;
 }
@@ -480,27 +475,29 @@ main {
 }
 
 ::-webkit-scrollbar-track {
-    background: #1a1a2e;
+    background: #f6f8fa;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #333;
+    background: #d0d7de;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #444;
+    background: #afb8c1;
 }
 
 /* Leaflet popup customization */
 .leaflet-popup-content-wrapper {
-    background: #16213e;
-    color: #fff;
+    background: #ffffff;
+    color: #24292f;
     border-radius: 8px;
+    border: 1px solid #d0d7de;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
 }
 
 .leaflet-popup-tip {
-    background: #16213e;
+    background: #ffffff;
 }
 
 .leaflet-popup-content {
@@ -510,23 +507,24 @@ main {
 .popup-title {
     font-weight: 600;
     margin-bottom: 0.5rem;
+    color: #24292f;
 }
 
 .popup-meta {
     font-size: 0.8rem;
-    color: #aaa;
+    color: #57606a;
 }
 
 /* Subtle map attribution */
 .leaflet-control-attribution {
-    background: rgba(0, 0, 0, 0.3) !important;
-    color: #555 !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    color: #57606a !important;
     font-size: 0.55rem !important;
     padding: 2px 5px !important;
 }
 
 .leaflet-control-attribution a {
-    color: #666 !important;
+    color: #0969da !important;
 }
 
 /* Developer Button */
@@ -534,9 +532,9 @@ main {
     position: fixed;
     bottom: 20px;
     right: 160px;
-    background: rgba(80, 80, 100, 0.6);
-    color: #aaa;
-    border: 1px solid rgba(100, 100, 120, 0.5);
+    background: rgba(255, 255, 255, 0.9);
+    color: #57606a;
+    border: 1px solid #d0d7de;
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -548,9 +546,10 @@ main {
 }
 
 #developer-btn:hover {
-    background: rgba(100, 100, 120, 0.8);
-    color: #fff;
+    background: #ffffff;
+    color: #24292f;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Donate Button */
@@ -558,22 +557,21 @@ main {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: rgba(100, 149, 237, 0.7);
+    background: #0969da;
     color: #fff;
-    border: 1px solid rgba(135, 175, 255, 0.5);
+    border: 1px solid #0969da;
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.3s ease;
     z-index: 1000;
-    backdrop-filter: blur(4px);
 }
 
 #donate-btn:hover {
-    background: rgba(100, 149, 237, 0.9);
+    background: #0860ca;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(100, 149, 237, 0.4);
+    box-shadow: 0 4px 12px rgba(9, 105, 218, 0.3);
 }
 
 /* Donate Floating Popup */
@@ -583,12 +581,12 @@ main {
     bottom: 60px;
     right: 20px;
     width: 280px;
-    background: #16213e;
+    background: #ffffff;
     border-radius: 10px;
     padding: 1rem;
     z-index: 2000;
-    border: 1px solid #444;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    border: 1px solid #d0d7de;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 #donate-popup.active {
@@ -597,13 +595,13 @@ main {
 
 #donate-popup h2 {
     margin: 0 0 0.5rem 0;
-    color: #fff;
+    color: #24292f;
     font-size: 1rem;
     padding-right: 24px;
 }
 
 #donate-popup > p {
-    color: #888;
+    color: #57606a;
     font-size: 0.75rem;
     margin-bottom: 0.75rem;
 }
@@ -614,7 +612,7 @@ main {
     right: 0.5rem;
     background: none;
     border: none;
-    color: #888;
+    color: #57606a;
     font-size: 1.2rem;
     cursor: pointer;
     width: 24px;
@@ -628,8 +626,8 @@ main {
 }
 
 .popup-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: #f3f4f6;
+    color: #24292f;
 }
 
 /* Donate Links */
@@ -642,22 +640,22 @@ main {
 .donate-link {
     display: block;
     padding: 0.5rem 0.6rem;
-    background: rgba(0, 0, 0, 0.25);
+    background: #f6f8fa;
     border-radius: 6px;
     text-decoration: none;
-    color: #ccc;
+    color: #24292f;
     font-size: 0.75rem;
     transition: all 0.2s;
-    border: 1px solid transparent;
+    border: 1px solid #d0d7de;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .donate-link:hover {
-    background: rgba(100, 149, 237, 0.2);
-    border-color: rgba(100, 149, 237, 0.4);
-    color: #fff;
+    background: #ddf4ff;
+    border-color: #0969da;
+    color: #0969da;
 }
 
 .donate-link .donate-icon {
@@ -667,10 +665,10 @@ main {
 .popup-footer {
     margin-top: 0.75rem;
     padding-top: 0.5rem;
-    border-top: 1px solid #333;
+    border-top: 1px solid #d0d7de;
     text-align: center;
     font-size: 0.65rem;
-    color: #555;
+    color: #57606a;
 }
 
 /* Responsive */

@@ -35,8 +35,8 @@ const App = {
         // Load all data
         await this.loadAllData();
 
-        // Hide all markers on initial load (user hovers/clicks panels to show)
-        MapManager.hideAllLayers();
+        // Show most recent event in screen saver mode (no panel active)
+        this.showScreenSaverMode();
 
         // Set up auto-refresh
         this.setupAutoRefresh();
@@ -73,10 +73,10 @@ const App = {
                     });
 
                     heading.addEventListener('mouseleave', () => {
-                        // Hide all layers on leave if no panel is filter-active
+                        // Return to screen saver mode if no panel is filter-active
                         const anyActive = document.querySelector('.panel.filter-active');
                         if (!anyActive) {
-                            MapManager.hideAllLayers();
+                            this.showScreenSaverMode();
                         }
                     });
 
@@ -95,8 +95,8 @@ const App = {
                         });
 
                         if (wasActive) {
-                            // Was active, hide all layers
-                            MapManager.hideAllLayers();
+                            // Was active, return to screen saver mode
+                            this.showScreenSaverMode();
                         } else {
                             // Activate this filter, expand panel
                             panel.classList.add('filter-active');
@@ -274,11 +274,8 @@ const App = {
         const refreshAndUpdate = async (loadFn) => {
             await loadFn.call(this);
             this.updateLastUpdate();
-            // Keep map hidden if no panel filter is active
-            const anyActive = document.querySelector('.panel.filter-active');
-            if (!anyActive) {
-                MapManager.hideAllLayers();
-            }
+            // Show screen saver mode (most recent event) if no panel is active
+            this.showScreenSaverMode();
         };
 
         this.timers.warnings = setInterval(
@@ -326,6 +323,16 @@ const App = {
         if (!this.mostRecentEvent || event.time > this.mostRecentEvent.time) {
             this.mostRecentEvent = event;
         }
+    },
+
+    // Show screen saver mode - display only the most recent event
+    showScreenSaverMode() {
+        const anyActive = document.querySelector('.panel.filter-active');
+        if (!anyActive && this.mostRecentEvent) {
+            MapManager.showMostRecentEvent(this.mostRecentEvent);
+        } else if (!anyActive) {
+            MapManager.hideAllLayers();
+        }
     }
 };
 
@@ -338,11 +345,8 @@ function refreshAll() {
     App.loadAllData().then(() => {
         btn.textContent = 'Refresh';
         btn.disabled = false;
-        // Keep map hidden if no panel filter active
-        const anyActive = document.querySelector('.panel.filter-active');
-        if (!anyActive) {
-            MapManager.hideAllLayers();
-        }
+        // Show screen saver mode (most recent event) if no panel is active
+        App.showScreenSaverMode();
     });
 }
 
