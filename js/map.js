@@ -78,10 +78,10 @@ const MapManager = {
             maxBoundsViscosity: 1.0 // Prevent dragging outside bounds completely
         });
 
-        // Add OpenTopoMap tile layer (terrain detail without prominent coastlines)
-        this.baseTileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-            maxZoom: 17
+        // Add ESRI World Shaded Relief (terrain without boundary lines)
+        this.baseTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri',
+            maxZoom: 13
         });
         this.baseTileLayer.addTo(this.map);
 
