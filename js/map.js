@@ -78,10 +78,11 @@ const MapManager = {
             maxBoundsViscosity: 1.0 // Prevent dragging outside bounds completely
         });
 
-        // Add OpenStreetMap tile layer (free, no auth required)
-        this.baseTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
+        // Add CartoDB Positron tile layer (clean styling, no prominent boundaries)
+        this.baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            maxZoom: 19,
+            subdomains: 'abcd'
         });
         this.baseTileLayer.addTo(this.map);
 
@@ -109,7 +110,7 @@ const MapManager = {
             const color = this.districtColors[name] || '#4a5568';
             const polygon = L.polygon(coords, {
                 fillColor: color,
-                fillOpacity: 0,
+                fillOpacity: 0.15,
                 color: color,
                 weight: 0,
                 opacity: 0
