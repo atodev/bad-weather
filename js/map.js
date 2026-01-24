@@ -78,11 +78,10 @@ const MapManager = {
             maxBoundsViscosity: 1.0 // Prevent dragging outside bounds completely
         });
 
-        // Add CartoDB Positron tile layer (clean styling, no prominent boundaries)
-        this.baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            maxZoom: 19,
-            subdomains: 'abcd'
+        // Add OpenTopoMap tile layer (terrain detail without prominent coastlines)
+        this.baseTileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            maxZoom: 17
         });
         this.baseTileLayer.addTo(this.map);
 
