@@ -114,7 +114,7 @@ const App = {
     // Load all data sources
     async loadAllData() {
         this.updateLastUpdate();
-        this.mostRecentEvent = null; // Reset to find fresh most recent
+        //this.mostRecentEvent = null; // Reset to find fresh most recent
 
         // Load all data in parallel
         await Promise.all([
