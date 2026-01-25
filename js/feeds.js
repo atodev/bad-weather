@@ -949,7 +949,7 @@ const Feeds = {
     async getRoadEvents() {
         try {
             const params = new URLSearchParams({
-                where: "planned = 'No'",
+                where: "planned = 'False'",
                 outFields: '*',
                 f: 'geojson',
                 resultRecordCount: 100
