@@ -344,6 +344,13 @@ const App = {
 
     // Update most recent event if this one is newer
     updateMostRecent(event) {
+        // Exclude weather warnings with '?' count from being set as mostRecentEvent
+        if (
+            event.type === 'warning' &&
+            document.getElementById('warning-count')?.textContent === '?'
+        ) {
+            return;
+        }
         if (!this.mostRecentEvent || event.time > this.mostRecentEvent.time) {
             this.mostRecentEvent = event;
         }
