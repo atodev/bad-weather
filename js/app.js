@@ -15,6 +15,11 @@ const App = {
     // Track the most recent event for initial display
     mostRecentEvent: null,
 
+    // Track whether we've loaded current weather once
+    weatherLoaded: false,
+    // Guard to indicate weather is currently loading
+    weatherLoading: false,
+
     // 24-hour time window (in milliseconds)
     timeWindowMs: 24 * 60 * 60 * 1000,
 
@@ -116,12 +121,11 @@ const App = {
         this.updateLastUpdate();
         //this.mostRecentEvent = null; // Reset to find fresh most recent
 
-        // Load all data in parallel
+        // Load all data in parallel (defer current weather until panel opened)
         await Promise.all([
             this.loadWeatherWarnings(),
             this.loadEarthquakes(),
             this.loadVolcanoes(),
-            this.loadWeather(),
             this.loadIncidents(),
             this.loadFire(),
             this.loadRoads()
@@ -214,6 +218,8 @@ const App = {
         try {
             const weatherData = await Weather.getAllCityWeather();
             Weather.renderWeather(weatherData, 'weather-content');
+            // Mark that we've loaded current weather once
+            this.weatherLoaded = true;
         } catch (error) {
             console.error('Error loading weather:', error);
             document.getElementById('weather-content').innerHTML =
@@ -334,7 +340,12 @@ const App = {
             this.refreshIntervals.roads
         );
 
-        console.log('Auto-refresh set up: every 5 minutes');
+        try {
+            const mins = Math.round(this.refreshIntervals.weather / 60000);
+            console.log(`Auto-refresh set up: every ${mins} minute${mins !== 1 ? 's' : ''}`);
+        } catch (e) {
+            console.log('Auto-refresh set up');
+        }
     },
 
     // Update last update timestamp
@@ -390,12 +401,49 @@ function setupPanelToggles() {
         panel.classList.add('collapsed');
     });
 
+    // Helper to load a script once and wait for it
+    async function loadScriptOnce(src) {
+        return new Promise((resolve, reject) => {
+            if (window.Weather) return resolve();
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                existing.addEventListener('load', () => resolve());
+                existing.addEventListener('error', (e) => reject(e));
+                return;
+            }
+            const s = document.createElement('script');
+            s.src = src;
+            s.async = true;
+            s.addEventListener('load', () => resolve());
+            s.addEventListener('error', (e) => reject(e));
+            document.body.appendChild(s);
+        });
+    }
+
     document.querySelectorAll('.panel h3').forEach(header => {
         header.addEventListener('click', (e) => {
             // Don't toggle if clicking on the count badge
             if (e.target.classList.contains('count')) return;
             const panel = header.closest('.panel');
             panel.classList.toggle('collapsed');
+
+            // If the weather panel was just expanded, lazy-load weather script then load data
+            if (panel.id === 'weather-panel' && !panel.classList.contains('collapsed') && !App.weatherLoaded && !App.weatherLoading) {
+                App.weatherLoading = true;
+                (async () => {
+                    try {
+                        if (typeof Weather === 'undefined') {
+                            await loadScriptOnce('js/weather.js');
+                        }
+                        await App.loadWeather();
+                    } catch (err) {
+                        console.error('Deferred weather load failed:', err);
+                    } finally {
+                        App.weatherLoading = false;
+                    }
+                })();
+            }
+
             // Save state to localStorage
             const panelId = panel.id;
             const collapsed = JSON.parse(localStorage.getItem('collapsedPanels') || '{}');

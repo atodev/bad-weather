@@ -18,6 +18,27 @@ const Feeds = {
 
     // Fetch with proxy fallback and timeout
     async fetchWithProxy(url) {
+        // First, try the local Vercel proxy which sets CDN caching headers
+        try {
+            const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            const response = await fetch(proxyUrl, {
+                headers: { 'Accept': 'application/rss+xml, application/xml, text/xml' },
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (response.ok) {
+                const text = await response.text();
+                if (text && (text.includes('<item>') || text.includes('<entry>'))) {
+                    console.log('Feed fetched successfully via local /api/proxy');
+                    return text;
+                }
+            }
+        } catch (e) {
+            if (e.name === 'AbortError') console.log('Local proxy timed out, falling back...');
+            else console.log('Local proxy failed, falling back...', e && e.message);
+        }
         for (const proxy of this.corsProxies) {
             try {
                 // Build proxy URL based on proxy type

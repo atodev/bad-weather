@@ -88,7 +88,9 @@ const Weather = {
                 forecast_days: 3
             });
 
-            const response = await fetch(`${this.baseUrl}/forecast?${params}`);
+            const target = `${this.baseUrl}/forecast?${params}`;
+            const proxyUrl = `/api/proxy?url=${encodeURIComponent(target)}`;
+            const response = await fetch(proxyUrl);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
 
