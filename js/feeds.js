@@ -175,7 +175,7 @@ const Feeds = {
         'te anau', 'kaikohe', 'kerikeri', 'paihia', 'dargaville', 'kaitaia',
         'state highway', 'sh1', 'sh2', 'sh3', 'sh4', 'sh5', 'sh6',
         'north island', 'south island', 'stewart island',
-        'kiwi', 'maori', 'māori', 'iwi', 'te reo'
+        'kiwi', 'maori', 'māori', 'iwi', 'te reo','waiheke'
     ],
 
     // Check if item is NZ-related
@@ -224,12 +224,15 @@ const Feeds = {
             'landslide', 'slip', 'landslip', 'evacuate', 'evacuation',
             'cyclone', 'tornado', 'severe', 'damage', 'power outage',
             'road closed', 'highway closed', 'state highway', 'trapped',
-            'civil defence', 'search and rescue', 'metservice',
+            'civil defence', 'search and rescue', 'metservice','outbreak','disease','pandemic','epidemic','virus','covid','measles',
+            'flooding', 'heavy rain', 'strong wind', 'snowstorm', 'blizzard',
+            'hailstorm', 'thunderstorm', 'lightning strike', 'wild weather',
             // Fire-related
             'fire', 'blaze', 'wildfire', 'bushfire', 'scrub fire', 'house fire',
             'structure fire', 'vegetation fire', 'forest fire', 'firefighters',
             'fenz', 'fire and emergency', 'arson', 'flames', 'burning',
             'fire crews', 'fire brigade', 'inferno'
+
         ];
 
         return items.filter(item => {

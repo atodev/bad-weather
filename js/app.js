@@ -162,10 +162,12 @@ const App = {
             const data = await response.json();
             const allQuakes = data.features || [];
 
-            // Filter to only show earthquakes from the last 24 hours
-            const quakes = allQuakes.filter(q =>
-                this.isWithin24Hours(q.properties?.time)
-            );
+            // Filter to only show earthquakes from the last 24 hours and magnitude >= 3.0
+            const quakes = allQuakes.filter(q => {
+                const timeOk = this.isWithin24Hours(q.properties?.time);
+                const mag = q.properties?.magnitude ?? q.properties?.mag ?? q.properties?.magnitudeValue ?? 0;
+                return timeOk && (mag >= 3);
+            });
 
             GeoNet.renderEarthquakes(quakes, 'earthquake-content');
             MapManager.addEarthquakes(quakes);
