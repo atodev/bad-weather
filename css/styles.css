@@ -247,8 +247,12 @@ main {
     content: '▼';
     font-size: 0.7rem;
     color: #57606a;
-    margin-left: 0.5rem;
     transition: transform 0.3s;
+    /* position the caret absolutely so it doesn't affect layout */
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .panel.collapsed h3::after {
@@ -272,9 +276,15 @@ main {
 .count {
     background: #0969da;
     color: #fff;
-    padding: 0.15rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    padding: 0.15rem 0;
     border-radius: 10px;
     font-size: 0.75rem;
+    margin-right: 8px; /* space before the caret */
 }
 
 .count.warning-count {
