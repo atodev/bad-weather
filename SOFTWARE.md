@@ -35,13 +35,13 @@ Bad Weather is a web application that provides real-time weather information, ea
 
 ```mermaid
 flowchart TD
-  A[User] -- Requests page --> B[Frontend (index.html, js/app.js)]
-  B -- Weather data --> C[Weather Module (js/weather.js)]
-  B -- Earthquake feed --> D[Earthquake Feed (js/feeds.js, js/geonet.js)]
-  B -- Map display --> E[Map Module (js/map.js)]
-  C -- Fetches weather data --> F[Proxy API (api/proxy.js)]
+  A[User] -- Requests page --> B[Frontend: index.html, js/app.js]
+  B -- Weather data --> C[Weather Module: js/weather.js]
+  B -- Earthquake feed --> D[Earthquake Feed: js/feeds.js, js/geonet.js]
+  B -- Map display --> E[Map Module: js/map.js]
+  C -- Fetches weather data --> F[Proxy API: api/proxy.js]
   D -- Fetches earthquake data --> F
-  F -- Requests --> G[External APIs (Weather, GeoNet)]
+  F -- Requests --> G[External APIs: Weather, GeoNet]
   G -- Responses --> F
   F -- Returns data --> B
   E -- Displays data --> B
